@@ -1,20 +1,20 @@
 const { useState, useEffect, useRef, useCallback } = React;
 
 const CATALOG = [
-    { id: 'sofa', label: 'sofa', emoji: '🛋️', w: 160, h: 65, color: '#8B7D4A', h3d: 0.85 },
-    { id: 'cupboard', label: 'cupboard', emoji: '🗄️', w: 80, h: 120, color: '#6B5B3A', h3d: 1.9 },
-    { id: 'wardrobe', label: 'wardrobe', emoji: '🚪', w: 100, h: 130, color: '#5C4A2E', h3d: 1.9 },
-    { id: 'bed', label: 'bed', emoji: '🛏️', w: 150, h: 110, color: '#C4884A', h3d: 0.55 },
-    { id: 'desk', label: 'desk', emoji: '🖥️', w: 120, h: 60, color: '#D4C68E', h3d: 0.52 },
-    { id: 'bookshelf', label: 'bookshelf', emoji: '📚', w: 70, h: 120, color: '#7A6438', h3d: 1.9 },
-    { id: 'tv_unit', label: 'tv unit', emoji: '📺', w: 140, h: 50, color: '#3A3020', h3d: 0.52 },
-    { id: 'armchair', label: 'armchair', emoji: '💺', w: 80, h: 75, color: '#C9A84C', h3d: 0.85 },
-    { id: 'plant', label: 'plant', emoji: '🌿', w: 50, h: 65, color: '#5A8A3A', h3d: 1.0 },
-    { id: 'lamp', label: 'lamp', emoji: '💡', w: 45, h: 110, color: '#F5F0E8', h3d: 1.65 },
-    { id: 'rug', label: 'rug', emoji: '🟫', w: 160, h: 90, color: '#8B6B2A', h3d: 0.05 },
-    { id: 'dining', label: 'dining', emoji: '🍽️', w: 130, h: 85, color: '#6B4420', h3d: 0.52 },
-    { id: 'coffee', label: 'coffee', emoji: '☕', w: 100, h: 55, color: '#9A8C6A', h3d: 0.52 },
-    { id: 'sideboard', label: 'sideboard', emoji: '🪵', w: 130, h: 55, color: '#5A4A2E', h3d: 0.52 }
+    { id: 'sofa', label: 'sofa', emoji: '🛋️', w: 160, h: 65, color: '#8B7D4A', h3d: 0.85, price: 25000 },
+    { id: 'cupboard', label: 'cupboard', emoji: '🗄️', w: 80, h: 120, color: '#6B5B3A', h3d: 1.9, price: 12000 },
+    { id: 'wardrobe', label: 'wardrobe', emoji: '🚪', w: 100, h: 130, color: '#5C4A2E', h3d: 1.9, price: 18000 },
+    { id: 'bed', label: 'bed', emoji: '🛏️', w: 150, h: 110, color: '#C4884A', h3d: 0.55, price: 22000 },
+    { id: 'desk', label: 'desk', emoji: '🖥️', w: 120, h: 60, color: '#D4C68E', h3d: 0.52, price: 8500 },
+    { id: 'bookshelf', label: 'bookshelf', emoji: '📚', w: 70, h: 120, color: '#7A6438', h3d: 1.9, price: 9500 },
+    { id: 'tv_unit', label: 'tv unit', emoji: '📺', w: 140, h: 50, color: '#3A3020', h3d: 0.52, price: 11000 },
+    { id: 'armchair', label: 'armchair', emoji: '💺', w: 80, h: 75, color: '#C9A84C', h3d: 0.85, price: 8000 },
+    { id: 'plant', label: 'plant', emoji: '🌿', w: 50, h: 65, color: '#5A8A3A', h3d: 1.0, price: 1500 },
+    { id: 'lamp', label: 'lamp', emoji: '💡', w: 45, h: 110, color: '#F5F0E8', h3d: 1.65, price: 2500 },
+    { id: 'rug', label: 'rug', emoji: '🟫', w: 160, h: 90, color: '#8B6B2A', h3d: 0.05, price: 6000 },
+    { id: 'dining', label: 'dining', emoji: '🍽️', w: 130, h: 85, color: '#6B4420', h3d: 0.52, price: 15000 },
+    { id: 'coffee', label: 'coffee', emoji: '☕', w: 100, h: 55, color: '#9A8C6A', h3d: 0.52, price: 5500 },
+    { id: 'sideboard', label: 'sideboard', emoji: '🪵', w: 130, h: 55, color: '#5A4A2E', h3d: 0.52, price: 10000 }
 ];
 
 const ROOM_TYPES = ['Living Room', 'Bedroom', 'Kitchen', 'Home Office', 'Dining Room'];
@@ -27,6 +27,170 @@ function normalize(v) {
 }
 function cross(a, b) { return { x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x }; }
 function dot(a, b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+
+function formatCurrency(amount) {
+    return '₹' + amount.toLocaleString('en-IN');
+}
+
+// ===== EXPORT TO PDF =====
+function exportToPDF(data) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    let y = 0;
+
+    // --- Clean Header ---
+    doc.setFillColor(35, 35, 35);
+    doc.rect(0, 0, pageW, 28, 'F');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.text('SOFA, SO GOOD!', margin, 12);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(180, 180, 180);
+    doc.text('Interior Design Quotation', margin, 20);
+
+    const dateStr = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+    doc.setFontSize(9);
+    doc.setTextColor(180, 180, 180);
+    doc.text(dateStr, pageW - margin, 12, { align: 'right' });
+
+    y = 38;
+
+    // --- Room type ---
+    if (data.rt) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('Room:', margin, y);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(30, 30, 30);
+        doc.text(data.rt, margin + 16, y);
+        y += 12;
+    }
+
+    // --- Thin separator ---
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, pageW - margin, y);
+    y += 10;
+
+    // --- Group items by catalog id, count quantities ---
+    const grouped = {};
+    data.items.forEach(it => {
+        if (!grouped[it.id]) {
+            grouped[it.id] = { ...it, qty: 0 };
+        }
+        grouped[it.id].qty += 1;
+    });
+    const rows = Object.values(grouped);
+    const grandTotal = data.items.reduce((s, it) => s + (it.price || 0), 0);
+
+    // --- Items Table ---
+    const tableBody = rows.map((r, i) => [
+        (i + 1).toString(),
+        r.label.charAt(0).toUpperCase() + r.label.slice(1),
+        formatCurrency(r.price || 0),
+        r.qty.toString(),
+        formatCurrency((r.price || 0) * r.qty)
+    ]);
+
+    doc.autoTable({
+        startY: y,
+        margin: { left: margin, right: margin },
+        head: [['#', 'Item', 'Unit Price', 'Qty', 'Line Total']],
+        body: tableBody,
+        theme: 'striped',
+        headStyles: {
+            fillColor: [245, 245, 245],
+            textColor: [50, 50, 50],
+            fontStyle: 'bold',
+            fontSize: 9,
+            halign: 'left',
+            lineColor: [200, 200, 200],
+            lineWidth: 0.3
+        },
+        bodyStyles: {
+            fontSize: 9,
+            textColor: [40, 40, 40],
+            cellPadding: 5,
+            lineColor: [230, 230, 230],
+            lineWidth: 0.15
+        },
+        columnStyles: {
+            0: { halign: 'center', cellWidth: 12 },
+            1: { halign: 'left', cellWidth: 60 },
+            2: { halign: 'right', cellWidth: 38 },
+            3: { halign: 'center', cellWidth: 18 },
+            4: { halign: 'right', cellWidth: 42 }
+        },
+        alternateRowStyles: { fillColor: [250, 250, 250] },
+        styles: {
+            font: 'helvetica',
+            overflow: 'linebreak'
+        }
+    });
+
+    y = doc.lastAutoTable.finalY + 2;
+
+    // --- Grand Total Row (clean) ---
+    doc.setDrawColor(50, 50, 50);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageW - margin, y);
+    y += 8;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(30, 30, 30);
+    doc.text('Grand Total', margin, y);
+    doc.text(formatCurrency(grandTotal), pageW - margin, y, { align: 'right' });
+
+    y += 4;
+    doc.setDrawColor(50, 50, 50);
+    doc.setLineWidth(0.8);
+    doc.line(pageW - margin - 50, y, pageW - margin, y);
+
+    // --- Footer ---
+    const footerY = pageH - 12;
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.line(margin, footerY - 6, pageW - margin, footerY - 6);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(160, 160, 160);
+    doc.text('Sofa, So Good! — Interior Design Quotation', margin, footerY);
+    doc.text('Page 1', pageW - margin, footerY, { align: 'right' });
+
+    doc.save('SofaSoGood_Quotation.pdf');
+}
+
+// ===== STICKY BUDGET BAR =====
+function StickyBudgetBar({ items, roomType, onExport }) {
+    const grandTotal = items.reduce((sum, it) => sum + (it.price || 0), 0);
+    const itemCount = items.length;
+
+    return (
+        <div className="sticky-budget-bar">
+            <div className="budget-bar-inner">
+                <div className="budget-bar-left">
+                    <div className="budget-bar-label">💰 Total Budget</div>
+                    <div className="budget-bar-amount">{formatCurrency(grandTotal)}</div>
+                </div>
+                <div className="budget-bar-right">
+                    <div className="budget-bar-count">📦 {itemCount} {itemCount === 1 ? 'block' : 'blocks'}</div>
+                    <button className="btn bg budget-export-btn" onClick={onExport}>
+                        📄 Export PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 // ===== PIXEL HEART COMPONENT =====
 function PixelHeart({ size = 12, color = '#C45A3A' }) {
@@ -353,7 +517,7 @@ function Stage2({ data, onNext }) {
 }
 
 // ===== STAGE 3: DESIGN CANVAS =====
-function Stage3({ data, nextStage }) {
+function Stage3({ data, nextStage, onItemsChange }) {
     const [items, setItems] = useState([]);
     const [sel, setSel] = useState(null);
     const [tab, setTab] = useState('items');
@@ -376,6 +540,11 @@ function Stage3({ data, nextStage }) {
 
     const delItem = (uid) => { setItems(prev => prev.filter(i => i.uid !== uid)); if (sel === uid) setSel(null); };
     const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2500); };
+
+    // Sync items to App whenever they change
+    useEffect(() => {
+        if (onItemsChange) onItemsChange(items);
+    }, [items, onItemsChange]);
 
     const [drag, setDrag] = useState(null);
 
@@ -562,6 +731,7 @@ function Stage3({ data, nextStage }) {
                                         }}>
                                             <div style={{ fontSize: 28 }}>{c.emoji}</div>
                                             <div style={{ fontSize: 6, textTransform: 'uppercase', color: 'var(--muted)' }}>{c.label}</div>
+                                            <div style={{ fontSize: 6, color: 'var(--copper)', fontFamily: 'Press Start 2P, monospace' }}>{formatCurrency(c.price)}</div>
                                             {added && <div className="abs" style={{ top: 3, right: 3, color: 'var(--green)', fontSize: 7 }}>✓</div>}
                                         </div>
                                     );
@@ -1034,17 +1204,30 @@ function App() {
     const reset = () => { setData({ photo: null, rt: '', obs: [], sugs: [], items: [] }); setStage(1); };
 
     let content;
+    const handleItemsChange = useCallback((newItems) => {
+        setData(p => ({ ...p, items: newItems }));
+    }, []);
+
     if (stage === 1) content = <Stage1 onNext={toStage2} />;
     else if (stage === 2) content = <Stage2 data={data} onNext={toStage3} />;
-    else if (stage === 3) content = <Stage3 data={data} nextStage={toStage4} />;
+    else if (stage === 3) content = <Stage3 data={data} nextStage={toStage4} onItemsChange={handleItemsChange} />;
     else if (stage === 4.1) content = <Stage4a data={data} nextStage={toFinal} onBack={backTo3} />;
     else if (stage === 4.2) content = <Stage4b data={data} reset={reset} />;
+
+    const handleExport = () => {
+        exportToPDF(data);
+    };
+
+    const showBudgetBar = stage >= 3;
 
     return (
       <>
         {stage === 1 && <FloatingFurniture />}
-        <div style={{ position: 'relative', zIndex: 1, height: '100%', width: '100%' }}>
-          {content}
+        <div style={{ position: 'relative', zIndex: 1, height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
+          {showBudgetBar && <StickyBudgetBar items={data.items} roomType={data.rt} onExport={handleExport} />}
+          <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+            {content}
+          </div>
         </div>
       </>
     );

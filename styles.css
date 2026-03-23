@@ -556,3 +556,83 @@ input[type=range]::-webkit-slider-thumb {
             rgba(74,62,44,0.3) 40px
         );
 }
+
+/* ===== STICKY BUDGET BAR ===== */
+.sticky-budget-bar {
+    position: sticky;
+    top: 0;
+    z-index: 500;
+    background: linear-gradient(180deg, #2C2010 0%, #3A2E1A 100%);
+    border-bottom: 3px solid var(--copper);
+    box-shadow:
+        0 4px 0px rgba(0,0,0,0.4),
+        inset 0 -1px 0px rgba(255,255,255,0.05);
+    flex-shrink: 0;
+}
+
+.budget-bar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    max-width: 100%;
+}
+
+.budget-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.budget-bar-label {
+    font-size: 7px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.budget-bar-amount {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(14px, 2.5vw, 22px);
+    color: var(--gold);
+    text-shadow:
+        2px 2px 0px #6B4420,
+        -1px -1px 0px #000,
+        1px -1px 0px #000,
+        -1px 1px 0px #000,
+        1px 1px 0px #000;
+    letter-spacing: 1px;
+    animation: budgetPulse 2s ease-in-out infinite;
+}
+
+@keyframes budgetPulse {
+    0%, 100% { text-shadow: 2px 2px 0px #6B4420, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 1px 1px 0px #000; }
+    50% { text-shadow: 2px 2px 0px #6B4420, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 1px 1px 0px #000, 0 0 8px rgba(184,146,42,0.4); }
+}
+
+.budget-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.budget-bar-count {
+    font-size: 7px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.budget-export-btn {
+    font-size: 7px !important;
+    padding: 8px 16px !important;
+    animation: none;
+}
+
+.budget-export-btn:hover:not(:disabled) {
+    box-shadow:
+        0 4px 0px #6B4420,
+        0 0 12px rgba(181,113,42,0.3),
+        inset 1px 1px 0px rgba(255,255,255,0.3),
+        inset -1px -1px 0px rgba(0,0,0,0.3) !important;
+}
