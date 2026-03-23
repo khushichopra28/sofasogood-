@@ -934,56 +934,187 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
         leftWall.receiveShadow = true;
         scene.add(leftWall);
 
-        const GL = THREE.GLTFLoader || window.GLTFLoader;
-        const loader = GL ? new GL() : null;
-        const MODEL_URLS = {
-            sofa: 'https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/sofa/model.gltf',
-            desk: 'https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/desk/model.gltf',
-            chair: 'https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/chair-wood/model.gltf',
-            armchair: 'https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/chair-wood/model.gltf',
-            plant: 'https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/tree-spruce/model.gltf',
-            lamp: 'https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/lamp/model.gltf',
-            bed: 'https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/bed/model.gltf',
-            dining: 'https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/table-wood/model.gltf',
-            tv_unit: 'https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/macbook/model.gltf'
-        };
+        // --- Procedural 3D Furniture Builder ---
+        function buildFurniture3D(id, color, tw, td) {
+            const group = new THREE.Group();
+            const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.55, metalness: 0.05 });
+            const matDark = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.7), roughness: 0.6 });
+            const matLight = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).lerp(new THREE.Color('#ffffff'), 0.3), roughness: 0.4 });
+            const white = new THREE.MeshStandardMaterial({ color: '#f5f0e8', roughness: 0.5 });
+            const fabric = new THREE.MeshStandardMaterial({ color: '#c9a84c', roughness: 0.8 });
 
-        const W2D = 800, H2D = 600;
+            const addBox = (w, h, d, x, y, z, m) => {
+                const g = new THREE.BoxGeometry(w, h, d);
+                const mesh = new THREE.Mesh(g, m || mat);
+                mesh.position.set(x, y, z);
+                mesh.castShadow = true; mesh.receiveShadow = true;
+                group.add(mesh);
+                return mesh;
+            };
+
+            switch(id) {
+                case 'sofa': {
+                    const sw = Math.max(tw, 1.5), sd = Math.max(td, 0.7);
+                    addBox(sw, 0.35, sd, 0, 0.175, 0, mat);          // seat base
+                    addBox(sw, 0.45, 0.1, 0, 0.575, -sd/2+0.05, mat); // back rest
+                    addBox(0.12, 0.3, sd, -sw/2+0.06, 0.5, 0, mat);   // left arm
+                    addBox(0.12, 0.3, sd, sw/2-0.06, 0.5, 0, mat);    // right arm
+                    addBox(sw*0.85, 0.08, sd*0.7, 0, 0.38, 0.05, fabric); // cushion
+                    break;
+                }
+                case 'bed': {
+                    const bw = Math.max(tw, 1.8), bd = Math.max(td, 1.2);
+                    addBox(bw, 0.28, bd, 0, 0.14, 0, mat);             // base frame
+                    addBox(bw, 0.55, 0.08, 0, 0.415, -bd/2+0.04, matDark); // headboard
+                    addBox(bw*0.92, 0.12, bd*0.88, 0, 0.34, 0.03, white);  // mattress
+                    addBox(bw*0.4, 0.06, 0.28, 0, 0.43, -bd/2+0.22, matLight); // pillow
+                    break;
+                }
+                case 'desk': {
+                    const dw = Math.max(tw, 1.0), dd = Math.max(td, 0.5);
+                    addBox(dw, 0.04, dd, 0, 0.72, 0, mat);           // top
+                    addBox(0.05, 0.7, 0.05, -dw/2+0.06, 0.35, -dd/2+0.06, matDark); // leg FL
+                    addBox(0.05, 0.7, 0.05, dw/2-0.06, 0.35, -dd/2+0.06, matDark);  // leg FR
+                    addBox(0.05, 0.7, 0.05, -dw/2+0.06, 0.35, dd/2-0.06, matDark);  // leg BL
+                    addBox(0.05, 0.7, 0.05, dw/2-0.06, 0.35, dd/2-0.06, matDark);   // leg BR
+                    break;
+                }
+                case 'cupboard': {
+                    const cw = Math.max(tw, 0.7), cd = Math.max(td, 0.4);
+                    addBox(cw, 1.5, cd, 0, 0.75, 0, mat);            // body
+                    addBox(0.02, 0.3, 0.02, -0.08, 0.9, cd/2+0.01, matDark); // handle L
+                    addBox(0.02, 0.3, 0.02, 0.08, 0.9, cd/2+0.01, matDark);  // handle R
+                    addBox(cw*0.95, 0.02, cd*0.9, 0, 0.75, 0, matDark);  // middle shelf line
+                    break;
+                }
+                case 'wardrobe': {
+                    const ww = Math.max(tw, 0.9), wd = Math.max(td, 0.5);
+                    addBox(ww, 1.8, wd, 0, 0.9, 0, mat);            // body
+                    addBox(0.01, ww > 0.6 ? 1.78 : 1.5, 0.01, 0, 0.9, wd/2+0.005, matDark); // center line
+                    addBox(0.02, 0.2, 0.02, -0.1, 1.0, wd/2+0.01, matDark); // handle L
+                    addBox(0.02, 0.2, 0.02, 0.1, 1.0, wd/2+0.01, matDark);  // handle R
+                    break;
+                }
+                case 'bookshelf': {
+                    const bsw = Math.max(tw, 0.6), bsd = Math.max(td, 0.3);
+                    addBox(bsw, 1.6, bsd, 0, 0.8, 0, mat);          // frame
+                    for (let i = 0; i < 4; i++) {
+                        addBox(bsw*0.88, 0.02, bsd*0.85, 0, 0.25 + i*0.38, 0, matDark); // shelves
+                        if (i < 3) {
+                            const bkW = 0.04 + Math.random()*0.04;
+                            const bkH = 0.18 + Math.random()*0.08;
+                            const bkColor = ['#8B4513', '#A0522D', '#6B4420', '#5C4A2E', '#D4A574'][i % 5];
+                            const bkMat = new THREE.MeshStandardMaterial({ color: bkColor, roughness: 0.7 });
+                            for (let j = 0; j < 3; j++) {
+                                addBox(bkW, bkH, bsd*0.6, -bsw*0.3 + j*0.15, 0.27 + i*0.38 + bkH/2, 0, bkMat);
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 'tv_unit': {
+                    const tvw = Math.max(tw, 1.2), tvd = Math.max(td, 0.35);
+                    addBox(tvw, 0.4, tvd, 0, 0.2, 0, mat);          // cabinet
+                    addBox(tvw*0.7, 0.5, 0.03, 0, 0.65, -tvd/2+0.1, new THREE.MeshStandardMaterial({ color: '#1a1a1a', roughness: 0.2, metalness: 0.5 })); // TV screen
+                    break;
+                }
+                case 'armchair': {
+                    const aw = Math.max(tw, 0.6), ad = Math.max(td, 0.6);
+                    addBox(aw, 0.3, ad, 0, 0.15, 0, mat);           // seat
+                    addBox(aw, 0.4, 0.08, 0, 0.5, -ad/2+0.04, mat);  // back
+                    addBox(0.1, 0.25, ad, -aw/2+0.05, 0.4, 0, mat);   // arm L
+                    addBox(0.1, 0.25, ad, aw/2-0.05, 0.4, 0, mat);    // arm R
+                    addBox(aw*0.75, 0.06, ad*0.7, 0, 0.33, 0.03, fabric); // cushion
+                    break;
+                }
+                case 'plant': {
+                    const potMat = new THREE.MeshStandardMaterial({ color: '#8B5E3C', roughness: 0.8 });
+                    const leafMat = new THREE.MeshStandardMaterial({ color: '#3A7A20', roughness: 0.7 });
+                    addBox(0.2, 0.25, 0.2, 0, 0.125, 0, potMat);    // pot
+                    const leafGeo = new THREE.SphereGeometry(0.25, 8, 6);
+                    const leaves = new THREE.Mesh(leafGeo, leafMat);
+                    leaves.position.set(0, 0.5, 0);
+                    leaves.scale.set(1, 1.3, 1);
+                    leaves.castShadow = true;
+                    group.add(leaves);
+                    const leafGeo2 = new THREE.SphereGeometry(0.18, 8, 6);
+                    const leaves2 = new THREE.Mesh(leafGeo2, leafMat);
+                    leaves2.position.set(0.1, 0.7, 0.05);
+                    leaves2.castShadow = true;
+                    group.add(leaves2);
+                    break;
+                }
+                case 'lamp': {
+                    const poleMat = new THREE.MeshStandardMaterial({ color: '#333333', roughness: 0.3, metalness: 0.6 });
+                    const shadeMat = new THREE.MeshStandardMaterial({ color: '#F5F0E8', roughness: 0.6, side: THREE.DoubleSide });
+                    addBox(0.2, 0.02, 0.2, 0, 0.01, 0, poleMat);      // base
+                    addBox(0.03, 1.3, 0.03, 0, 0.66, 0, poleMat);     // pole
+                    const shadeGeo = new THREE.CylinderGeometry(0.12, 0.22, 0.25, 8, 1, true);
+                    const shade = new THREE.Mesh(shadeGeo, shadeMat);
+                    shade.position.set(0, 1.38, 0);
+                    shade.castShadow = true;
+                    group.add(shade);
+                    break;
+                }
+                case 'rug': {
+                    const rw = Math.max(tw, 1.5), rd = Math.max(td, 1.0);
+                    const rugMat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.9 });
+                    addBox(rw, 0.02, rd, 0, 0.01, 0, rugMat);
+                    const borderMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.6), roughness: 0.9 });
+                    addBox(rw, 0.025, 0.04, 0, 0.013, -rd/2+0.02, borderMat);
+                    addBox(rw, 0.025, 0.04, 0, 0.013, rd/2-0.02, borderMat);
+                    addBox(0.04, 0.025, rd, -rw/2+0.02, 0.013, 0, borderMat);
+                    addBox(0.04, 0.025, rd, rw/2-0.02, 0.013, 0, borderMat);
+                    break;
+                }
+                case 'dining': {
+                    const dtw = Math.max(tw, 1.2), dtd = Math.max(td, 0.8);
+                    addBox(dtw, 0.04, dtd, 0, 0.74, 0, mat);       // top
+                    addBox(0.06, 0.7, 0.06, -dtw/2+0.1, 0.35, -dtd/2+0.1, matDark);
+                    addBox(0.06, 0.7, 0.06, dtw/2-0.1, 0.35, -dtd/2+0.1, matDark);
+                    addBox(0.06, 0.7, 0.06, -dtw/2+0.1, 0.35, dtd/2-0.1, matDark);
+                    addBox(0.06, 0.7, 0.06, dtw/2-0.1, 0.35, dtd/2-0.1, matDark);
+                    break;
+                }
+                case 'coffee': {
+                    const ctw = Math.max(tw, 0.8), ctd = Math.max(td, 0.5);
+                    addBox(ctw, 0.03, ctd, 0, 0.42, 0, mat);       // top
+                    addBox(0.04, 0.4, 0.04, -ctw/2+0.08, 0.2, -ctd/2+0.08, matDark);
+                    addBox(0.04, 0.4, 0.04, ctw/2-0.08, 0.2, -ctd/2+0.08, matDark);
+                    addBox(0.04, 0.4, 0.04, -ctw/2+0.08, 0.2, ctd/2-0.08, matDark);
+                    addBox(0.04, 0.4, 0.04, ctw/2-0.08, 0.2, ctd/2-0.08, matDark);
+                    break;
+                }
+                case 'sideboard': {
+                    const sbw = Math.max(tw, 1.2), sbd = Math.max(td, 0.35);
+                    addBox(sbw, 0.65, sbd, 0, 0.325, 0, mat);
+                    addBox(sbw*0.95, 0.02, 0.01, 0, 0.65, sbd/2+0.005, matDark); // top edge
+                    for (let i = 0; i < 3; i++) {
+                        addBox(0.02, 0.12, 0.02, -sbw*0.3 + i*sbw*0.3, 0.35, sbd/2+0.01, matDark); // handles
+                    }
+                    break;
+                }
+                default: {
+                    const h = 0.8;
+                    addBox(tw, h, td, 0, h/2, 0, mat);
+                }
+            }
+            return group;
+        }
+
+        // --- Place furniture using actual canvas dimensions ---
+        const canvasW = W;
+        const canvasH = H;
 
         data.items.forEach(it => {
-            const cx = (it.x + it.w / 2) / W2D * RM_W - RM_W / 2;
-            const cz = (it.y + it.h / 2) / H2D * RM_D - RM_D / 2;
-            const targetW = (it.w / W2D) * RM_W;
-            const targetD = (it.h / H2D) * RM_D;
+            const cx = (it.x + it.w / 2) / canvasW * RM_W - RM_W / 2;
+            const cz = (it.y + it.h / 2) / canvasH * RM_D - RM_D / 2;
+            const targetW = Math.max((it.w / canvasW) * RM_W, 0.3);
+            const targetD = Math.max((it.h / canvasH) * RM_D, 0.3);
 
-            const url = MODEL_URLS[it.id];
-
-            if (url && loader) {
-                loader.load(url, (gltf) => {
-                    const model = gltf.scene;
-                    const box = new THREE.Box3().setFromObject(model);
-                    const size = box.getSize(new THREE.Vector3());
-                    const scaleX = targetW / size.x;
-                    const scaleZ = targetD / size.z;
-                    const scale = Math.min(scaleX, scaleZ) * 0.9;
-                    model.scale.set(scale, scale, scale);
-                    model.position.set(cx, 0, cz);
-                    model.traverse((node) => {
-                        if (node.isMesh) {
-                            node.castShadow = true; node.receiveShadow = true;
-                        }
-                    });
-                    scene.add(model);
-                });
-            } else {
-                const h = it.h3d || 0.8;
-                const geo = new THREE.BoxGeometry(targetW, h, targetD);
-                const mat = new THREE.MeshStandardMaterial({ color: it.color, roughness: 0.6 });
-                const mesh = new THREE.Mesh(geo, mat);
-                mesh.position.set(cx, h / 2, cz);
-                mesh.castShadow = true; mesh.receiveShadow = true;
-                scene.add(mesh);
-            }
+            const furnitureGroup = buildFurniture3D(it.id, it.color, targetW, targetD);
+            furnitureGroup.position.set(cx, 0, cz);
+            scene.add(furnitureGroup);
         });
 
         const vigPlane = new THREE.PlaneGeometry(20, 20);
