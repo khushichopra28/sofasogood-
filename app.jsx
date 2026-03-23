@@ -463,7 +463,7 @@ function Stage2({ data, onNext }) {
             if (p >= 100) {
                 clearInterval(i);
                 setTimeout(() => onNext({
-                    obs: ["High ceiling detected — great for vertical builds!", "Spacious center area — perfect for a focal rug block.", "Warm ambient lighting — earthy tones recommended."],
+                    obs: ["Minimalist white walls with a large architectural archway", "Light-toned wooden plank flooring", "High ceiling with warm ambient lighting", "Open floor plan with clean modern lines"],
                     sugs: [{ id: 'sofa', reason: 'Anchors the room core' }, { id: 'rug', reason: 'Defines the center zone' }, { id: 'plant', reason: 'Adds organic life blocks' }]
                 }), 700);
             }
@@ -1211,14 +1211,20 @@ function Stage4b({ data, reset }) {
     const [view3d, setView3d] = useState(false);
 
     useEffect(() => {
+        const itemLabels = data.items.map(it => it.label).join(", ");
+        const obsList = (data.obs || []).join(", ");
+        const roomType = data.rt || "Living Room";
+
+        const prompt = `Architectural interior photography of a luxurious ${roomType}. Features: ${obsList}. Furnished with: ${itemLabels}. Style: cinematic warm lighting, extremely detailed, photorealistic, 8k, elegant furniture, matching the original room layout --ar 16:9`;
+
         setTimeout(() => {
             setDesc({
-                text: `A cozy ${data.rt} crafted in warm, earthy pixel-style aesthetics. The space is anchored by carefully placed furnishing blocks that maximize flow and visual depth. Warm copper lighting and rich golden tones create an inviting, game-world atmosphere.`,
-                prompt: `Architectural interior photography of a luxurious warm-toned modern ${data.rt}, elegant furniture, cinematic warm lighting, extremely detailed, photorealistic, 8k --ar 16:9`
+                text: `A cozy ${roomType} crafted with ${obsList.toLowerCase()}. The space is anchored by ${itemLabels.toLowerCase()}, arranged to maximize flow and visual depth. Warm copper lighting and rich golden tones create an inviting, game-world atmosphere.`,
+                prompt: prompt
             });
             setLoad(false);
         }, 2000);
-    }, []);
+    }, [data.items, data.obs, data.rt]);
 
     return (
         <div className="flex col fw fh fi" style={{ background: 'var(--bg)' }}>
