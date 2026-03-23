@@ -1,0 +1,558 @@
+/* ======================================
+   SOFA, SO GOOD! — Minecraft Pixel Theme
+   ====================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+    /* Earthy Minecraft Palette — Light Mode */
+    --bg: #F5F0E8;
+    --surface: #EDE8DE;
+    --card: #E0D8C8;
+    --beige: #D4C68E;
+    --cream: #FDFAF4;
+    --copper: #B5712A;
+    --olive: #7A6B30;
+    --gold: #B8922A;
+    --text: #2C2010;
+    --muted: #6B5A3A;
+    --dim: #C8B898;
+    --ghost: #D8CEBC;
+    --green: #4A7A2A;
+    --red: #B04A2A;
+
+    /* Pixel sizing */
+    --pixel: 4px;
+    --border-px: 3px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Press Start 2P', monospace;
+    overflow: hidden;
+    user-select: none;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+h1, h2, h3, .wm {
+    font-family: 'Press Start 2P', monospace;
+    text-transform: uppercase;
+}
+
+button, input {
+    font-family: 'Press Start 2P', monospace;
+    outline: none;
+    border: none;
+}
+
+/* ===== PIXEL TITLE ===== */
+.wm {
+    font-size: clamp(20px, 4vw, 36px);
+    font-weight: 400;
+    color: var(--gold);
+    text-shadow:
+        3px 3px 0px #8B6B2A,
+        -1px -1px 0px #000,
+        1px -1px 0px #000,
+        -1px 1px 0px #000,
+        1px 1px 0px #000;
+    letter-spacing: 2px;
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: unset;
+}
+
+/* ===== ANIMATIONS ===== */
+.fi {
+    animation: fadeIn 0.3s steps(6) forwards;
+}
+
+.pi {
+    animation: popIn 0.4s steps(8) forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.85); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes gp {
+    0%, 100% { border-color: var(--copper); }
+    50% { border-color: transparent; }
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pixelBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+@keyframes blockBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+/* ===== PIXEL BUTTONS ===== */
+.btn {
+    padding: 8px 14px;
+    border-radius: 0;
+    cursor: pointer;
+    transition: all 0.1s steps(2);
+    font-weight: 400;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: var(--border-px) solid;
+    image-rendering: pixelated;
+    position: relative;
+}
+
+.bg {
+    background: var(--copper);
+    color: #1a1610;
+    font-weight: 400;
+    border-color: #6B4420 #A06830 #A06830 #6B4420;
+    box-shadow:
+        inset 1px 1px 0px rgba(255,255,255,0.3),
+        inset -1px -1px 0px rgba(0,0,0,0.3);
+}
+
+.bg:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow:
+        0 4px 0px #6B4420,
+        inset 1px 1px 0px rgba(255,255,255,0.3),
+        inset -1px -1px 0px rgba(0,0,0,0.3);
+    background: #D49A5A;
+}
+
+.bg:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: inset 2px 2px 0px rgba(0,0,0,0.4);
+}
+
+.bg:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.bgh {
+    background: transparent;
+    border: var(--border-px) solid var(--copper);
+    color: var(--copper);
+}
+
+.bgh:hover {
+    background: rgba(196, 136, 74, 0.15);
+    color: var(--gold);
+}
+
+.bgo {
+    background: transparent;
+    border: var(--border-px) solid var(--dim);
+    color: var(--muted);
+}
+
+.bgo:hover {
+    border-color: var(--copper);
+    color: var(--copper);
+    background: rgba(196, 136, 74, 0.08);
+}
+
+/* ===== PIXEL CHIPS ===== */
+.chip {
+    padding: 6px 12px;
+    border: var(--border-px) solid var(--dim);
+    border-radius: 0;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.1s steps(2);
+    font-size: 7px;
+    font-family: 'Press Start 2P', monospace;
+}
+
+.chip.act {
+    border-color: var(--copper);
+    color: var(--gold);
+    background: rgba(196, 136, 74, 0.15);
+    box-shadow: inset 0 0 0 1px rgba(196,136,74,0.3);
+}
+
+/* ===== LAYOUTS ===== */
+.flex { display: flex; }
+.col { flex-direction: column; }
+.center { align-items: center; justify-content: center; }
+.fw { width: 100%; }
+.fh { height: 100%; }
+.abs { position: absolute; }
+.rel { position: relative; }
+
+/* ===== PIXEL UPLOAD AREA (Drop Zone) ===== */
+.dz {
+    border: var(--border-px) dashed var(--copper);
+    border-radius: 0;
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    background: repeating-conic-gradient(var(--ghost) 0% 25%, transparent 0% 50%) 0 0 / 8px 8px;
+    transition: background 0.2s;
+}
+
+.dz:hover {
+    background: repeating-conic-gradient(rgba(196,136,74,0.1) 0% 25%, transparent 0% 50%) 0 0 / 8px 8px;
+    border-color: var(--gold);
+}
+
+.dz input {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* ===== 2D CANVAS / GAME ===== */
+.cv-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #1a1610;
+}
+
+.cv-bg {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 1;
+    position: absolute;
+    pointer-events: none;
+    image-rendering: auto;
+}
+
+.cv-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(74,62,44,0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74,62,44,0.5) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* ===== SIDEBAR ===== */
+.sb {
+    width: 264px;
+    background: var(--surface);
+    border-left: var(--border-px) solid var(--dim);
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== TOOLBAR ===== */
+.tbar {
+    height: 50px;
+    background: var(--surface);
+    border-bottom: var(--border-px) solid var(--dim);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    justify-content: space-between;
+}
+
+/* ===== BOTTOM TOOLBAR ===== */
+.btbar {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card);
+    border: var(--border-px) solid var(--dim);
+    border-radius: 0;
+    padding: 6px 12px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+}
+
+/* ===== FURNITURE ITEMS (Pixel Blocks) ===== */
+.f-item {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border-radius: 0;
+    box-shadow:
+        3px 3px 0px rgba(0,0,0,0.6),
+        inset 2px 2px 0px rgba(255,255,255,0.15),
+        inset -2px -2px 0px rgba(0,0,0,0.25);
+    cursor: grab;
+    background-color: var(--item-col);
+    border: var(--border-px) solid rgba(0,0,0,0.3);
+    image-rendering: pixelated;
+}
+
+.f-item:active {
+    cursor: grabbing;
+    transform: scale(1.03);
+    z-index: 200 !important;
+}
+
+.f-item.sel {
+    border: var(--border-px) solid var(--gold);
+    box-shadow:
+        0 0 0 2px var(--copper),
+        4px 4px 0px rgba(0,0,0,0.6);
+    z-index: 100;
+    animation: pixelBlink 1.5s steps(2) infinite;
+}
+
+.f-lbl {
+    position: absolute;
+    bottom: -22px;
+    font-size: 6px;
+    color: var(--text);
+    background: var(--card);
+    padding: 2px 6px;
+    border: var(--border-px) solid var(--dim);
+    border-radius: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Press Start 2P', monospace;
+}
+
+.rh {
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    width: 10px;
+    height: 10px;
+    background: var(--gold);
+    border-radius: 0;
+    cursor: se-resize;
+    z-index: 101;
+    border: 2px solid #8B6B2A;
+}
+
+.del-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 16px;
+    height: 16px;
+    background: var(--red);
+    color: #fff;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    cursor: pointer;
+    z-index: 101;
+    line-height: 1;
+    border: 2px solid #8B3020;
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+}
+
+/* ===== PIXEL TOAST ===== */
+.toast {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card);
+    border: var(--border-px) solid var(--copper);
+    padding: 10px 20px;
+    border-radius: 0;
+    z-index: 1000;
+    animation: fadeIn 0.2s steps(4) ease;
+    font-size: 8px;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.6);
+}
+
+/* ===== GHOST HINTS (Pixel Dashed) ===== */
+.ghost {
+    position: absolute;
+    border: var(--border-px) dashed var(--copper);
+    pointer-events: none;
+    animation: gp 1.5s steps(4) infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ghost-lbl {
+    position: absolute;
+    bottom: -24px;
+    font-size: 6px;
+    color: var(--copper);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    font-family: 'Press Start 2P', monospace;
+}
+
+/* ===== PIXEL SCROLLBAR ===== */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--dim);
+    border-radius: 0;
+}
+
+/* ===== DECORATIVE PIXEL ORBS (now square blocks) ===== */
+.orb {
+    position: fixed;
+    border-radius: 0;
+    filter: blur(80px);
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.o1 {
+    top: -80px;
+    right: -80px;
+    width: 320px;
+    height: 320px;
+    background: var(--copper);
+}
+
+.o2 {
+    bottom: -150px;
+    left: -150px;
+    width: 450px;
+    height: 450px;
+    background: var(--copper);
+    filter: blur(120px);
+    opacity: 0.35;
+}
+
+/* ===== PROGRESS BAR (Pixel) ===== */
+.pbar-wrap {
+    width: 100%;
+    height: 8px;
+    background: var(--dim);
+    border-radius: 0;
+    overflow: hidden;
+    margin-top: 16px;
+    border: 2px solid #2a2318;
+}
+
+.pbar {
+    height: 100%;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--copper) 0px,
+        var(--copper) 6px,
+        var(--gold) 6px,
+        var(--gold) 12px
+    );
+    width: 0%;
+    transition: width 0.3s steps(20);
+    image-rendering: pixelated;
+}
+
+canvas {
+    display: block;
+    /* Keep WebGL canvas crisp but NOT pixelated — pixelated breaks WebGL */
+    image-rendering: auto;
+}
+
+/* ===== PIXEL RANGE INPUTS ===== */
+input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--dim);
+    outline: none;
+    border-radius: 0;
+    border: 2px solid #2a2318;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 0;
+    background: var(--copper);
+    cursor: pointer;
+    border: 2px solid #6B4420;
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+}
+
+/* ===== SWATCHES (Pixel Squares) ===== */
+.swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 0;
+    cursor: pointer;
+    border: var(--border-px) solid rgba(0,0,0,0.3);
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.4);
+}
+
+.swatch.sel {
+    border-color: var(--cream);
+    box-shadow:
+        0 0 0 2px var(--gold),
+        2px 2px 0px rgba(0,0,0,0.4);
+}
+
+/* ===== MINECRAFT DIRT BORDER PATTERN ===== */
+.pixel-border {
+    border: var(--border-px) solid;
+    border-color: #5A4A2E #3A2E1A #3A2E1A #5A4A2E;
+    box-shadow:
+        inset 2px 2px 0px rgba(255,255,255,0.08),
+        inset -2px -2px 0px rgba(0,0,0,0.15),
+        4px 4px 0px rgba(0,0,0,0.4);
+}
+
+/* ===== CRAFTING GRID BG PATTERN ===== */
+.craft-bg {
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 39px,
+            rgba(74,62,44,0.3) 39px,
+            rgba(74,62,44,0.3) 40px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 39px,
+            rgba(74,62,44,0.3) 39px,
+            rgba(74,62,44,0.3) 40px
+        );
+}
