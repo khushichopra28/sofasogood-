@@ -333,6 +333,7 @@ function Stage1({ onNext }) {
     const [dragging, setDragging] = useState(false);
     const [loading, setLoading] = useState(false);
     const [navScrolled, setNavScrolled] = useState(false);
+    const [uploadedPhoto, setUploadedPhoto] = useState(null);
 
     useScrollReveal();
 
@@ -351,12 +352,9 @@ function Stage1({ onNext }) {
     const handleUpload = (file) => {
         if (!file) return;
         setLoading(true);
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            onNext({ photo: e.target.result, rt: 'Living Room' });
-            setLoading(false);
-        };
-        reader.readAsDataURL(file);
+        const objUrl = URL.createObjectURL(file);
+        setUploadedPhoto(objUrl);
+        setLoading(false);
     };
 
     const scrollToUpload = () => {
@@ -586,18 +584,32 @@ function Stage1({ onNext }) {
                         Upload a photo of your room and let our AI engine work its magic.
                     </p>
                 </div>
-                <div 
-                    className={`upload-zone reveal-scale ${dragging ? 'dragging' : ''}`}
-                    onDragOver={e => { e.preventDefault(); setDragging(true); }}
-                    onDragLeave={() => setDragging(false)}
-                    onDrop={e => { e.preventDefault(); setDragging(false); handleUpload(e.dataTransfer.files[0]); }}
-                    onClick={() => document.getElementById('file-upload').click()}
-                >
-                    <input id="file-upload" type="file" accept="image/*" hidden onChange={e => handleUpload(e.target.files[0])} />
-                    <div className="upload-icon">📸</div>
-                    <h3>Initialize Spatial Scan</h3>
-                    <p>Drag & drop your floorplan or a photo of your room</p>
-                    <button className="upload-btn" onClick={(e) => e.stopPropagation()}>Browse Local Files</button>
+                <div style={{ position: 'relative' }}>
+                    {!uploadedPhoto ? (
+                        <div 
+                            className={`upload-zone reveal-scale ${dragging ? 'dragging' : ''}`}
+                            onDragOver={e => { e.preventDefault(); setDragging(true); }}
+                            onDragLeave={() => setDragging(false)}
+                            onDrop={e => { e.preventDefault(); setDragging(false); handleUpload(e.dataTransfer.files[0]); }}
+                            onClick={() => document.getElementById('file-upload').click()}
+                        >
+                            <input id="file-upload" type="file" accept="image/*" hidden onChange={e => handleUpload(e.target.files[0])} />
+                            <div className="upload-icon">📸</div>
+                            <h3>Initialize Spatial Scan</h3>
+                            <p>Drag & drop your floorplan or a photo of your room</p>
+                            <button className="upload-btn" onClick={(e) => e.stopPropagation()}>Browse Local Files</button>
+                        </div>
+                    ) : (
+                        <div className="anim-fade" style={{ textAlign: 'center', margin: '40px auto 20px', maxWidth: 800 }}>
+                            <div style={{ padding: 8, background: 'rgba(255,255,255,0.05)', border: '2px solid var(--gold)', borderRadius: 16, display: 'inline-block', marginBottom: 24, boxShadow: '0 0 30px rgba(212,175,55,0.1)' }}>
+                                <img src={uploadedPhoto} alt="Uploaded Room" style={{ maxWidth: '100%', maxHeight: 400, borderRadius: 8, display: 'block', objectFit: 'contain' }} />
+                            </div>
+                            <div className="flex center" style={{ gap: 16 }}>
+                                <button className="btn-outline" onClick={() => setUploadedPhoto(null)}>⟲ Replace Photo</button>
+                                <button className="btn-modern" style={{ padding: '16px 32px', fontSize: 13 }} onClick={() => onNext({ photo: uploadedPhoto, rt: 'Living Room' })}>Confirm Spatial Scan ✦</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div className="flex center" style={{ marginTop: 32, gap: 40 }}>
                     <div className="flex center" style={{ gap: 10 }}>
@@ -1527,8 +1539,8 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
             </div>
 
             {!isPreviewMode && (
-                <div className="sb" style={{ padding: 40, borderLeft: '1px solid var(--border)', background: 'var(--surface)', minWidth: 380, width: 380, flexShrink: 0 }}>
-                    <div className="col" style={{ gap: 40, flex: 1, overflowY: 'auto' }}>
+                <div className="sb" style={{ padding: '24px 32px', borderLeft: '1px solid var(--border)', background: 'var(--surface)', minWidth: 380, width: 380, flexShrink: 0 }}>
+                    <div className="col" style={{ gap: 28, flex: 1, overflowY: 'auto' }}>
                         <div>
                             <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 20 }}>🔆 Scene Illumination</div>
                             <div className="col" style={{ gap: 16 }}>
@@ -1540,7 +1552,7 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
                                     <div key={l.id} className="flex" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div className="flex" style={{ gap: 12, alignItems: 'center' }}>
                                             <span style={{ fontSize: 18 }}>{l.icon}</span>
-                                            <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>{l.label}</span>
+                                            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{l.label}</span>
                                         </div>
                                         <div className={`switch-premium ${lights[l.id] ? 'active' : ''}`} onClick={() => setLights(p => ({ ...p, [l.id]: !p[l.id] }))}>
                                             <div className="thumb" />
@@ -1587,13 +1599,13 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
                             <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 20 }}>🏢 Interior Architecture</div>
                             <div className="col" style={{ gap: 16 }}>
                                 <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 500 }}>Left Wall Curtains</span>
+                                    <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 500, whiteSpace: 'nowrap' }}>Left Wall Curtains</span>
                                     <div className={`switch-premium ${config.showLeftCurtain ? 'active' : ''}`} onClick={() => setConfig(p => ({ ...p, showLeftCurtain: !p.showLeftCurtain }))}>
                                         <div className="thumb" />
                                     </div>
                                 </div>
                                 <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 500 }}>Back Wall Curtains</span>
+                                    <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 500, whiteSpace: 'nowrap' }}>Back Wall Curtains</span>
                                     <div className={`switch-premium ${config.showBackCurtain ? 'active' : ''}`} onClick={() => setConfig(p => ({ ...p, showBackCurtain: !p.showBackCurtain }))}>
                                         <div className="thumb" />
                                     </div>
@@ -1611,9 +1623,9 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
                         </div>
                     </div>
 
-                    <div style={{ marginTop: 40 }}>
-                        <button className="btn-modern fw" style={{ padding: 24, fontSize: 14 }} onClick={() => nextStage()}>Finalize Project View ✦</button>
-                        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-secondary)', marginTop: 16 }}>Real-time spatial synchronization active.</p>
+                    <div style={{ marginTop: 24 }}>
+                        <button className="btn-modern fw" style={{ padding: 20, fontSize: 14 }} onClick={() => nextStage()}>Finalize Project View ✦</button>
+                        <p style={{ textAlign: 'center', fontSize: 10, color: 'var(--text-secondary)', marginTop: 12 }}>Real-time spatial synchronization active.</p>
                     </div>
                 </div>
             )}
@@ -1778,10 +1790,10 @@ function App() {
         setLevelAnim(levelTitle);
         setTimeout(() => {
             setStage(newStage);
-        }, 2500); // 2.5s to switch background component
+        }, 1500); // 1.5s to switch background component
         setTimeout(() => {
             setLevelAnim(null);
-        }, 3600); // 3.6s total animation
+        }, 2200); // 2.2s total animation
     };
 
     const toStage1_5 = (d) => { setData(p => ({ ...p, photo: d.photo, rt: d.rt })); transitionToStage(1.5, "LEVEL 2: STYLE PROFILE"); };
@@ -1867,7 +1879,7 @@ function App() {
                     position: 'fixed', inset: 0, zIndex: 9999,
                     background: 'var(--dark)',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    animation: 'flash-level 3.6s ease-in-out forwards'
+                    animation: 'flash-level 2.2s ease-in-out forwards'
                 }}>
                     <style>{`
                         @keyframes flash-level {
@@ -1888,7 +1900,7 @@ function App() {
                     
                     {/* Retro Loading Bar */}
                     <div style={{ width: 400, height: 24, border: '4px solid var(--accent)', background: 'rgba(0,0,0,0.5)', position: 'relative' }}>
-                        <div style={{ height: '100%', background: 'var(--gold)', animation: 'load-bar 2.5s cubic-bezier(0.1, 0.7, 0.3, 1) forwards' }}></div>
+                        <div style={{ height: '100%', background: 'var(--gold)', animation: 'load-bar 1.4s cubic-bezier(0.1, 0.7, 0.3, 1) forwards' }}></div>
                     </div>
                 </div>
             )}
