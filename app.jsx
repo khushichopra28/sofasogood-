@@ -169,6 +169,9 @@ function exportToPDF(data) {
     doc.save('SofaSoGood_Quotation.pdf');
 }
 
+// Expose to window for the App component
+window.exportToPDF = exportToPDF;
+
 // ===== MODERN BUDGET HUD =====
 function StickyBudgetBar({ items }) {
     const total = items.reduce((s, it) => s + (it.price || 0), 0);
@@ -270,10 +273,79 @@ function FloatingFurniture() {
     return <canvas ref={canvasRef} style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }} />;
 }
 
-// ===== STAGE 1: UPLOAD / ROOM SELECT =====
+// ===== SCROLL REVEAL HOOK =====
+function useScrollReveal() {
+    useEffect(() => {
+        const els = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .stagger-children');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+        els.forEach(el => observer.observe(el));
+        return () => observer.disconnect();
+    }, []);
+}
+
+// ===== ANIMATED COUNTER =====
+function AnimatedCounter({ target, suffix = '' }) {
+    const [count, setCount] = useState(0);
+    const ref = useRef(null);
+    const started = useRef(false);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !started.current) {
+                started.current = true;
+                const duration = 1800;
+                const startTime = performance.now();
+                const step = (now) => {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    setCount(Math.round(eased * target));
+                    if (progress < 1) requestAnimationFrame(step);
+                };
+                requestAnimationFrame(step);
+            }
+        }, { threshold: 0.5 });
+        if (ref.current) observer.observe(ref.current);
+        return () => observer.disconnect();
+    }, [target]);
+
+    return <span ref={ref}>{count}{suffix}</span>;
+}
+
+// ===== STAR SVG =====
+function StarSVG({ style }) {
+    return (
+        <div className="star-deco" style={style}>
+            <svg viewBox="0 0 24 24"><path d="M12 0L14.59 8.41L23 12L14.59 15.59L12 24L9.41 15.59L1 12L9.41 8.41Z"/></svg>
+        </div>
+    );
+}
+
+// ===== STAGE 1: LANDING PAGE =====
 function Stage1({ onNext }) {
     const [dragging, setDragging] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [navScrolled, setNavScrolled] = useState(false);
+
+    useScrollReveal();
+
+    useEffect(() => {
+        document.body.classList.remove('no-scroll');
+        const handleScroll = () => {
+            setNavScrolled(window.scrollY > 60);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            document.body.classList.add('no-scroll');
+        };
+    }, []);
 
     const handleUpload = (file) => {
         if (!file) return;
@@ -286,54 +358,375 @@ function Stage1({ onNext }) {
         reader.readAsDataURL(file);
     };
 
+    const scrollToUpload = () => {
+        document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const projectImages = [
+        { url: 'images/living-room.png', title: 'Contemporary Lounge', type: 'Living Room' },
+        { url: 'images/bedroom.png', title: 'Serene Retreat', type: 'Bedroom' },
+        { url: 'images/dining.png', title: 'Dining Studio', type: 'Dining Room' },
+        { url: 'images/render-1.png', title: 'Creative Workshop', type: 'Home Office' },
+        { url: 'images/render-2.png', title: 'Nordic Kitchen', type: 'Kitchen' },
+        { url: 'images/render-3.png', title: 'Grand Suite', type: 'Bedroom' }
+    ];
+
     return (
-        <div className="flex center fh fw col anim-fade" style={{ background: 'var(--bg)', padding: 40 }}>
-            <div style={{ maxWidth: 640, textAlign: 'center' }}>
-                <h1 className="brand" style={{ fontSize: 42, marginBottom: 12 }}>SOFA, <span>SO GOOD!</span></h1>
-                <p style={{ fontSize: 16, color: 'var(--text-secondary)', marginBottom: 48, fontWeight: 300 }}>
-                    Experience the future of interior design with our high-end AI vision engine.
+        <div style={{ width: '100%', minHeight: '100vh', overflow: 'auto' }}>
+            {/* === NAVIGATION === */}
+            <nav className={`landing-nav ${navScrolled ? 'scrolled' : ''}`}>
+                <div className="logo">SOFA, <em>SO GOOD!</em></div>
+                <div className="nav-links">
+                    <a href="#about">About</a>
+                    <a href="#process">Process</a>
+                    <a href="#projects">Projects</a>
+                    <a href="#testimonials">Reviews</a>
+                    <a href="#upload-section" className="nav-cta" onClick={(e) => { e.preventDefault(); scrollToUpload(); }}>Start Designing</a>
+                </div>
+            </nav>
+
+            {/* === HERO SECTION === */}
+            <section className="hero-section" id="hero">
+                <StarSVG style={{ top: '12%', left: '15%', animationDelay: '0s' }} />
+                <StarSVG style={{ top: '25%', right: '48%', animationDelay: '1s' }} />
+                <StarSVG style={{ bottom: '30%', left: '30%', animationDelay: '2s' }} />
+
+                <div className="hero-badge">
+                    <span className="dot"></span>
+                    Welcome to Sofa, So Good!
+                </div>
+                <h1 className="hero-title">
+                    WE CRAFT <span className="accent-word">SPACES</span> & LIVING EXPERIENCES
+                </h1>
+                <p className="hero-description">
+                    Elevate your room's character with our AI-powered interior design engine.
+                    From spatial scans to photorealistic 3D renders, we bring your vision to life.
                 </p>
-                
+                <div className="hero-actions">
+                    <button className="hero-btn-primary" onClick={scrollToUpload}>
+                        Let's Design
+                        <span className="arrow">→</span>
+                    </button>
+                    <button className="hero-btn-secondary" onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>
+                        Learn More
+                    </button>
+                </div>
+                <div className="hero-stats">
+                    <div className="hero-stat">
+                        <div className="number"><AnimatedCounter target={250} suffix="+" /></div>
+                        <div className="label">Rooms Designed</div>
+                    </div>
+                    <div className="hero-stat">
+                        <div className="number"><AnimatedCounter target={40} suffix="%" /></div>
+                        <div className="label">Satisfaction Increase</div>
+                    </div>
+                    <div className="hero-stat">
+                        <div className="number"><AnimatedCounter target={14} suffix="" /></div>
+                        <div className="label">Furniture Categories</div>
+                    </div>
+                    <div className="hero-stat">
+                        <div className="number"><AnimatedCounter target={3} suffix="D" /></div>
+                        <div className="label">Real-Time Preview</div>
+                    </div>
+                </div>
+
+                {/* Floating cards */}
+                <div className="hero-float-area">
+                    <div className="hero-float-card">
+                        <img src="images/living-room.png" alt="Living Room" />
+                    </div>
+                    <div className="hero-float-card">
+                        <img src="images/bedroom.png" alt="Bedroom" />
+                    </div>
+                    <div className="hero-float-card">
+                        <img src="images/dining.png" alt="Dining" />
+                    </div>
+                </div>
+            </section>
+
+            {/* === MARQUEE STRIP === */}
+            <div className="marquee-section">
+                <div className="marquee-track">
+                    {[...Array(2)].map((_, setIdx) => (
+                        <React.Fragment key={setIdx}>
+                            {['AI-Powered Design', '3D Visualization', 'Smart Layouts', 'Precision Planning', 'PDF Quotations', 'Real-Time Rendering', 'Drag & Drop', 'Budget Tracking'].map((item, i) => (
+                                <div className="marquee-item" key={`${setIdx}-${i}`}>
+                                    <span className="sep"></span>
+                                    {item}
+                                </div>
+                            ))}
+                        </React.Fragment>
+                    ))}
+                </div>
+            </div>
+
+            {/* === ABOUT SECTION === */}
+            <section className="about-section" id="about">
+                <div className="about-left reveal-left">
+                    <div className="section-label">About Us</div>
+                    <h2 className="section-title">Meet Sofa, So Good! Your Design Partners</h2>
+                    <p className="section-desc">
+                        We're not just a tool — we're your creative co-pilot. Sofa, So Good! combines
+                        cutting-edge AI vision with an intuitive spatial editor. From analyzing your room's
+                        architecture to generating photorealistic 3D renders, we transform how you imagine
+                        and design your living spaces.
+                    </p>
+                    <div className="about-stat-card">
+                        <div className="big-num"><AnimatedCounter target={40} suffix="%" /></div>
+                        <div className="sub">Increased design confidence reported by our users</div>
+                    </div>
+                    <div className="service-tags stagger-children">
+                        <span className="service-tag">Room Design</span>
+                        <span className="service-tag">AI Analysis</span>
+                        <span className="service-tag">3D Preview</span>
+                        <span className="service-tag">Smart Budgeting</span>
+                        <span className="service-tag">PDF Quotation</span>
+                        <span className="service-tag">Spatial Planning</span>
+                    </div>
+                </div>
+                <div className="about-right reveal-right">
+                    <div className="about-image-grid">
+                        <div className="img-card">
+                            <img src="images/render-1.png" alt="Design Process" />
+                        </div>
+                        <div className="img-card">
+                            <img src="images/render-3.png" alt="Styled Room" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* === HOW IT WORKS === */}
+            <section className="how-section" id="process">
+                <div className="reveal">
+                    <div className="section-label">How We Work</div>
+                    <h2 className="section-title">Let us show you how we drive<br/>your space to new heights</h2>
+                </div>
+                <div className="how-cards stagger-children">
+                    <div className="how-card">
+                        <div className="step-icon">📸</div>
+                        <div className="step-num">01</div>
+                        <div className="step-title">Upload</div>
+                        <div className="step-desc">Drag & drop a photo of your room or upload a floorplan. Our AI instantly starts its spatial analysis.</div>
+                    </div>
+                    <div className="how-card">
+                        <div className="step-icon">🧠</div>
+                        <div className="step-num">02</div>
+                        <div className="step-title">Analyze</div>
+                        <div className="step-desc">Our vision engine detects architectural features, lighting zones, and suggests optimal furniture placement.</div>
+                    </div>
+                    <div className="how-card">
+                        <div className="step-icon">🎨</div>
+                        <div className="step-num">03</div>
+                        <div className="step-title">Design</div>
+                        <div className="step-desc">Place furniture from our curated catalog. Resize, reposition, and customize every piece on an interactive canvas.</div>
+                    </div>
+                    <div className="how-card">
+                        <div className="step-icon">✨</div>
+                        <div className="step-num">04</div>
+                        <div className="step-title">Render</div>
+                        <div className="step-desc">Generate stunning 3D visualizations and photorealistic AI renders. Export professional PDF quotations instantly.</div>
+                    </div>
+                </div>
+            </section>
+
+            {/* === PROJECTS SHOWCASE === */}
+            <section className="projects-section" id="projects">
+                <div className="reveal">
+                    <div className="section-label" style={{ color: 'var(--accent)' }}>Portfolio</div>
+                    <h2 className="section-title">Explore our most successful projects</h2>
+                    <p className="section-desc">Every design is unique. Here's a sample of AI-generated room transformations.</p>
+                </div>
+                <div className="projects-grid stagger-children">
+                    {projectImages.map((proj, i) => (
+                        <div className="project-card" key={i}>
+                            <img src={proj.url} alt={proj.title} loading="lazy" />
+                            <div className="project-overlay">
+                                <div className="proj-title">{proj.title}</div>
+                                <div className="proj-type">{proj.type}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* === TESTIMONIALS === */}
+            <section className="testimonials-section" id="testimonials">
+                <div className="reveal">
+                    <div className="section-label">Testimonials</div>
+                    <h2 className="section-title">Here's what people say about our tool</h2>
+                </div>
+                <div className="testimonials-grid stagger-children">
+                    {[
+                        { quote: "Sofa, So Good! completely transformed how I plan my living space. The AI suggestions were spot-on and the 3D preview blew my mind!", name: "Priya M.", role: "Interior Enthusiast", initials: "PM" },
+                        { quote: "As an interior designer, this tool saves me hours. The budget tracking and PDF quotation export are game changers for client presentations.", name: "Arjun K.", role: "Professional Designer", initials: "AK" },
+                        { quote: "I was skeptical about AI design tools, but the spatial analysis and furniture recommendations were incredibly accurate. Highly recommend!", name: "Sneha R.", role: "Home Owner", initials: "SR" }
+                    ].map((t, i) => (
+                        <div className="testimonial-card" key={i}>
+                            <div className="quote">"{t.quote}"</div>
+                            <div className="author">
+                                <div className="avatar">{t.initials}</div>
+                                <div>
+                                    <div className="author-name">{t.name}</div>
+                                    <div className="author-role">{t.role}</div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* === CTA / UPLOAD SECTION === */}
+            <section className="cta-section" id="upload-section">
+                <div className="reveal">
+                    <div className="section-label" style={{ textAlign: 'center' }}>Get Started</div>
+                    <h2 className="section-title">Let's start designing your dream space</h2>
+                    <p className="section-desc" style={{ textAlign: 'center', maxWidth: 500, margin: '0 auto' }}>
+                        Upload a photo of your room and let our AI engine work its magic.
+                    </p>
+                </div>
                 <div 
-                    className={`control-group ${dragging ? 'dragging' : ''}`}
+                    className={`upload-zone reveal-scale ${dragging ? 'dragging' : ''}`}
                     onDragOver={e => { e.preventDefault(); setDragging(true); }}
                     onDragLeave={() => setDragging(false)}
                     onDrop={e => { e.preventDefault(); setDragging(false); handleUpload(e.dataTransfer.files[0]); }}
                     onClick={() => document.getElementById('file-upload').click()}
-                    style={{
-                        padding: 64,
-                        background: 'white',
-                        border: dragging ? '2px solid var(--accent)' : '2px dashed var(--border)',
-                        borderRadius: 24,
-                        cursor: 'pointer',
-                        transition: '0.3s',
-                        boxShadow: 'var(--shadow)'
-                    }}
                 >
-                    <input id="file-upload" type="file" hidden onChange={e => handleUpload(e.target.files[0])} />
-                    <div style={{ fontSize: 48, marginBottom: 20 }}>📸</div>
-                    <h2 style={{ fontSize: 20, marginBottom: 8, color: 'var(--text-primary)' }}>Initialize Spatial Scan</h2>
-                    <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Drag & drop your floorplan or a photo of your current space</p>
-                    <button className="btn-modern" style={{ marginTop: 24 }}>Browse Local Files</button>
+                    <input id="file-upload" type="file" accept="image/*" hidden onChange={e => handleUpload(e.target.files[0])} />
+                    <div className="upload-icon">📸</div>
+                    <h3>Initialize Spatial Scan</h3>
+                    <p>Drag & drop your floorplan or a photo of your room</p>
+                    <button className="upload-btn" onClick={(e) => e.stopPropagation()}>Browse Local Files</button>
                 </div>
-
-                <div className="flex center" style={{ marginTop: 40, gap: 40 }}>
+                <div className="flex center" style={{ marginTop: 32, gap: 40 }}>
                     <div className="flex center" style={{ gap: 10 }}>
-                        <div style={{ width: 8, height: 8, background: 'var(--accent)', borderRadius: '50%' }} />
-                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>AI Precision</span>
+                        <div style={{ width: 8, height: 8, background: 'var(--accent)', borderRadius: '50%' }}></div>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: 1 }}>AI Precision</span>
                     </div>
                     <div className="flex center" style={{ gap: 10 }}>
-                        <div style={{ width: 8, height: 8, background: 'var(--accent)', borderRadius: '50%' }} />
-                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>Real-Time 3D</span>
+                        <div style={{ width: 8, height: 8, background: 'var(--accent)', borderRadius: '50%' }}></div>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: 1 }}>Real-Time 3D</span>
+                    </div>
+                    <div className="flex center" style={{ gap: 10 }}>
+                        <div style={{ width: 8, height: 8, background: 'var(--accent)', borderRadius: '50%' }}></div>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: 1 }}>PDF Export</span>
                     </div>
                 </div>
-            </div>
+            </section>
 
+            {/* === FOOTER === */}
+            <footer className="landing-footer">
+                <div className="footer-logo">SOFA, <em>SO GOOD!</em></div>
+                <div className="footer-links">
+                    <a href="#about">About</a>
+                    <a href="#process">Process</a>
+                    <a href="#projects">Projects</a>
+                    <a href="#testimonials">Reviews</a>
+                </div>
+                <div className="footer-copy">© 2026 Sofa, So Good! All rights reserved.</div>
+            </footer>
+
+            {/* Loading overlay */}
             {loading && (
-                <div className="abs fw fh flex center col" style={{ background: 'rgba(255,255,255,0.7)', zIndex: 1000 }}>
-                    <div style={{ width: 40, height: 40, border: '4px solid #eee', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                <div className="landing-loading">
+                    <div style={{ width: 48, height: 48, border: '4px solid #eee', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                    <div style={{ marginTop: 16, fontSize: 13, fontWeight: 600, color: '#999', letterSpacing: 1 }}>ANALYZING SPATIAL DATA...</div>
                 </div>
             )}
+        </div>
+    );
+}
+
+// ===== STAGE 1.5: AESTHETIC QUESTIONNAIRE =====
+function Stage1_5({ data, onNext }) {
+    const questions = [
+        { q: "DESIGN AESTHETIC", opts: ["Modern Minimalist", "Bohemian", "Industrial", "Mid-Century Modern", "Scandinavian", "Eclectic"] },
+        { q: "PRIMARY FUNCTION", opts: ["Relaxation", "Focus / Work", "Entertainment", "Storage Heavy"] },
+        { q: "COLOR PALETTE", opts: ["Earthy & Warm", "Cool & Calming", "High Contrast Dark", "Vibrant Accents"] },
+        { q: "LIGHTING TARGET", opts: ["Bright Natural", "Moody & Atmospheric", "Warm & Cozy", "Dynamic Glow"] },
+        { q: "MATERIAL FINISH", opts: ["Natural Wood & Stone", "Sleek Metal & Glass", "Soft Plush Fabrics", "Raw / Unfinished"] }
+    ];
+    const [answers, setAnswers] = useState(Array(5).fill(""));
+    const [step, setStep] = useState(0);
+    const [qAnim, setQAnim] = useState("q-in");
+
+    const handleSelect = (opt) => {
+        if (qAnim === "q-out") return; // Prevent spam clicking
+
+        const newAns = [...answers];
+        newAns[step] = opt;
+        setAnswers(newAns);
+        setQAnim("q-out");
+
+        setTimeout(() => {
+            if (step < 4) {
+                setStep(step + 1);
+                setQAnim("q-in");
+            } else {
+                onNext({ prefs: newAns });
+            }
+        }, 350);
+    };
+
+    const progress = (step / 5) * 100;
+
+    return (
+        <div className="flex center fh fw rel anim-fade" style={{ 
+            backgroundImage: `linear-gradient(rgba(35, 30, 20, 0.85), rgba(35, 30, 20, 0.95)), url(${data.photo})`, 
+            backgroundSize: 'cover', backgroundPosition: 'center', overflowY: 'auto', padding: 40 
+        }}>
+            <style>{`
+                @keyframes q-slide-in {
+                    from { opacity: 0; transform: translateX(60px); }
+                    to { opacity: 1; transform: translateX(0); }
+                }
+                @keyframes q-slide-out {
+                    from { opacity: 1; transform: translateX(0); }
+                    to { opacity: 0; transform: translateX(-60px); }
+                }
+                .q-in { animation: q-slide-in 0.35s cubic-bezier(0.1, 0.7, 0.3, 1) forwards; }
+                .q-out { animation: q-slide-out 0.35s cubic-bezier(0.7, 0.1, 0.9, 0.3) forwards; }
+                .opt-btn {
+                    padding: 16px 24px; font-size: 11px; cursor: pointer; font-family: inherit;
+                    background: var(--card); color: var(--text-primary);
+                    border: 4px solid var(--border); transition: 0.15s;
+                    box-shadow: 6px 6px 0px var(--dark);
+                    text-transform: uppercase; font-weight: 800; letter-spacing: 1px;
+                }
+                .opt-btn:hover {
+                    background: var(--gold); color: var(--dark);
+                    transform: translateY(-4px); box-shadow: 10px 10px 0px var(--dark);
+                }
+                .opt-btn:active {
+                    transform: translateY(2px); box-shadow: 0px 0px 0px var(--dark);
+                }
+            `}</style>
+            
+            <div className="col" style={{ maxWidth: 740, width: '100%', background: 'var(--surface)', padding: 64, border: '4px solid var(--border)', boxShadow: '12px 12px 0px var(--dark)', overflow: 'hidden' }}>
+                <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                    <div style={{ fontSize: 20, fontWeight: 700, textTransform: 'uppercase', color: 'var(--accent)', letterSpacing: 2, marginBottom: 8 }}>PLAYER STYLE PROFILE</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Configure parameters for the AI Engine</div>
+                </div>
+
+                <div style={{ width: '100%', height: 12, background: 'var(--card)', border: '4px solid var(--dark)', marginBottom: 48, position: 'relative' }}>
+                    <div style={{ width: `${progress}%`, height: '100%', background: 'var(--gold)', transition: 'width 0.4s cubic-bezier(0.1, 0.7, 0.3, 1)' }}></div>
+                </div>
+
+                <div className={`col ${qAnim}`} style={{ minHeight: 220, justifyContent: 'center' }}>
+                    {step < 5 && (
+                        <React.Fragment>
+                            <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-secondary)', textAlign: 'center', marginBottom: 32 }}>
+                                QUESTION {step + 1} OF 5 <br/><br/><span style={{ color: 'var(--gold)', fontSize: 24 }}>{questions[step].q}</span>
+                            </div>
+                            <div className="flex" style={{ gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                {questions[step].opts.map(opt => (
+                                    <button key={opt} className="opt-btn" onClick={() => handleSelect(opt)}>{opt}</button>
+                                ))}
+                            </div>
+                        </React.Fragment>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
@@ -350,9 +743,9 @@ function Stage2({ data, onNext }) {
             p += Math.random() * 8 + 2;
             if (p > 100) p = 100;
             setPct(p);
-            if (p >= 28 && p < 58) setLbl("Detecting architectural volumes...");
-            else if (p >= 58 && p < 88) setLbl("Sourcing optimal furniture geometries...");
-            else if (p >= 88 && p < 100) setLbl("Finalizing spatial analysis...");
+            if (p >= 28 && p < 58) setLbl("LEVEL 1: Aesthetic Analysis...");
+            else if (p >= 58 && p < 88) setLbl("LEVEL 2: Sourcing Geometries...");
+            else if (p >= 88 && p < 100) setLbl("LEVEL 3: Finalizing Architecture...");
 
             if (p >= 100) {
                 clearInterval(i);
@@ -371,8 +764,12 @@ function Stage2({ data, onNext }) {
     }, [data, onNext]);
 
     return (
-        <div className="flex center fh fw rel anim-fade" style={{ background: '#F9FAFB' }}>
-            <div className="col" style={{ width: 440, background: 'white', padding: 48, borderRadius: 28, boxShadow: 'var(--shadow-lg)' }}>
+        <div className="flex center fh fw rel anim-fade" style={data.photo ? { 
+            backgroundImage: `linear-gradient(rgba(45, 38, 25, 0.85), rgba(45, 38, 25, 0.95)), url(${data.photo})`, 
+            backgroundSize: 'cover', 
+            backgroundPosition: 'center' 
+        } : { background: 'var(--bg)' }}>
+            <div className="col" style={{ width: 440, background: 'var(--surface)', padding: 48, border: '4px solid var(--border)', boxShadow: '8px 8px 0px var(--dark)' }}>
                 <div style={{ textAlign: 'center', marginBottom: 40 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--accent)', letterSpacing: 2, marginBottom: 8 }}>AI VISION ENGINE</div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{lbl}</div>
@@ -513,10 +910,15 @@ function Stage3({ data, nextStage, onItemsChange }) {
 
 
     return (
-        <div className="flex fw fh col anim-fade" style={{ background: 'var(--bg)' }}>
+        <div className="flex fw fh col anim-fade" style={data.photo ? { 
+            backgroundImage: `linear-gradient(rgba(240, 230, 200, 0.8), rgba(240, 230, 200, 0.9)), url(${data.photo})`, 
+            backgroundSize: 'cover', 
+            backgroundPosition: 'center' 
+        } : { background: 'var(--bg)' }}>
             <div className="flex flex-1" style={{ minHeight: 0 }}>
-                <div className="viewport flex-1 rel" ref={wrapRef} onMouseDown={(e) => { if (e.target === wrapRef.current) setSel(null); }}>
-                    <div className="cv-grid"></div>
+                <div className="viewport flex-1 rel" ref={wrapRef} onMouseDown={(e) => { if (e.target === wrapRef.current) setSel(null); }} style={data.photo ? { backgroundImage: `url(${data.photo})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+                    {!data.photo && <div className="cv-grid"></div>}
+                    {data.photo && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)', pointerEvents: 'none' }}></div>}
                     
                     {/* Ghost hints */}
                     {hints && data.sugs.slice(0, 2).map((s, i) => {
@@ -1162,21 +1564,32 @@ function Stage4b({ data, reset }) {
     const [load, setLoad] = useState(true);
     const [desc, setDesc] = useState(null);
     const [view3d, setView3d] = useState(false);
+    const [imgState, setImgState] = useState('loading'); // loading | loaded | error
+    const [fullScreen, setFullScreen] = useState(null); // 'photo' | 'render'
 
     useEffect(() => {
-        const itemLabels = data.items.map(it => it.label).join(", ");
-        const obsList = (data.obs || []).join(", ");
-        const roomType = data.rt || "Living Room";
+        if (desc) setImgState('loading');
+    }, [desc]);
 
-        const prompt = `Architectural interior photography of a luxurious ${roomType}. Features: ${obsList}. Furnished with: ${itemLabels}. Style: cinematic warm lighting, extremely detailed, photorealistic, 8k, elegant furniture, matching the original room layout --ar 16:9`;
+    useEffect(() => {
+        const uniqueItems = [...new Set(data.items.map(it => it.label))];
+        const itemCounts = uniqueItems.map(label => {
+            const count = data.items.filter(it => it.label === label).length;
+            return count > 1 ? `${count}x ${label}` : label;
+        }).join(", ");
+        const roomType = data.rt || "Living Room";
+        const designStyle = data.prefs ? data.prefs.join(", ") : "luxurious modern";
+
+        // Keep prompt SHORT for Pollinations URL to work, but inject user's exact preferences!
+        const prompt = `${roomType} interior, ${designStyle}, ${itemCounts}, photorealistic, 8k, architectural lighting`;
 
         setTimeout(() => {
             setDesc({
-                text: `A cozy ${roomType} crafted with ${obsList.toLowerCase()}. The space is anchored by ${itemLabels.toLowerCase()}, arranged to maximize flow and visual depth. Warm copper lighting and rich golden tones create an inviting, game-world atmosphere.`,
+                text: `${roomType} with ${itemCounts || 'curated furnishings'}, themed around ${designStyle}. Designed for comfort and style.`,
                 prompt: prompt
             });
             setLoad(false);
-        }, 2000);
+        }, 2500);
     }, [data.items, data.obs, data.rt]);
 
     return (
@@ -1190,32 +1603,58 @@ function Stage4b({ data, reset }) {
                         </div>
                     ) : (
                         <div className="anim-fade" style={{ maxWidth: 1100, margin: '0 auto' }}>
-                            <div className="flex" style={{ gap: 32, height: 440, marginBottom: 48 }}>
+                            <div className="flex" style={{ gap: 24, height: 440, marginBottom: 32 }}>
                                 <div className="flex-1 col">
-                                    <label className="control-label">📷 Reference Layout</label>
-                                    <div className="fw fh" style={{ borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow)', border: '1px solid var(--border)' }}>
-                                        {data.photo ? <img src={data.photo} className="fw fh" style={{ objectFit: 'cover' }} /> : <div className="fw fh" style={{ background: '#eee' }} />}
+                                    <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                                        <label className="control-label" style={{ marginBottom: 0 }}>📷 YOUR ROOM</label>
+                                        <button className="btn-outline" style={{ padding: '4px 12px', fontSize: 9 }} onClick={() => setFullScreen('photo')}>⤢ ENLARGE</button>
+                                    </div>
+                                    <div className="fw fh" style={{ overflow: 'hidden', boxShadow: 'var(--shadow)', border: '2px solid var(--border)', cursor: 'pointer' }} onClick={() => setFullScreen('photo')}>
+                                        {data.photo ? <img src={data.photo} className="fw fh" style={{ objectFit: 'cover' }} /> : <div className="fw fh" style={{ background: 'var(--card)' }} />}
                                     </div>
                                 </div>
                                 <div className="flex-1 col">
-                                    <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                                        <label className="control-label" style={{ marginBottom: 0 }}>🎨 4K Architectural Visualization</label>
-                                        <button className="btn-outline" style={{ padding: '4px 12px', fontSize: 11 }} onClick={() => setView3d(!view3d)}>{view3d ? "View Static" : "Interactive 3D"}</button>
+                                    <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                                        <label className="control-label" style={{ marginBottom: 0 }}>🎨 AI RENDER</label>
+                                        <div className="flex" style={{ gap: 8 }}>
+                                            <button className="btn-outline" style={{ padding: '4px 12px', fontSize: 9 }} onClick={() => setView3d(!view3d)}>{view3d ? "Static" : "3D View"}</button>
+                                            <button className="btn-modern" style={{ padding: '4px 12px', fontSize: 9 }} onClick={() => setFullScreen('render')}>⤢ ENLARGE</button>
+                                        </div>
                                     </div>
-                                    <div className="fw fh" style={{ borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border)', position: 'relative' }}>
-                                        {view3d ? <Stage4a data={data} isPreviewMode={true} /> : <img src={`https://image.pollinations.ai/prompt/${encodeURIComponent(desc.prompt)}?width=1000&height=800&nologo=true&seed=88`} className="fw fh" style={{ objectFit: 'cover' }} />}
+                                    <div className="fw fh" style={{ overflow: 'hidden', boxShadow: 'var(--shadow-lg)', border: '2px solid var(--border)', position: 'relative', background: 'var(--card)', cursor: 'pointer' }} onClick={(e) => { if(e.target.tagName !== 'CANVAS') setFullScreen('render') }}>
+                                        {view3d ? <Stage4a data={data} isPreviewMode={true} /> : (
+                                            <React.Fragment>
+                                                <img 
+                                                    src={`https://pollinations.ai/p/${encodeURIComponent(desc.prompt)}?width=800&height=600&nologo=true&seed=42`}
+                                                    className="fw fh" 
+                                                    style={{ objectFit: 'cover', opacity: imgState === 'loaded' ? 1 : 0, transition: 'opacity 0.3s' }}
+                                                    onLoad={() => setImgState('loaded')}
+                                                    onError={() => setImgState('error')}
+                                                />
+                                                {imgState !== 'loaded' && (
+                                                    <div className="flex center col fh fw" style={{ position: 'absolute', inset: 0, background: 'var(--card)', zIndex: 10 }}>
+                                                        {imgState === 'loading' ? (
+                                                            <React.Fragment>
+                                                                <div style={{ width: 40, height: 40, border: '3px solid var(--border)', borderTopColor: 'var(--accent)', animation: 'spin 1s linear infinite' }}></div>
+                                                                <div style={{ marginTop: 12, fontSize: 7, color: 'var(--text-secondary)', letterSpacing: 1 }}>GENERATING AI RENDER...</div>
+                                                            </React.Fragment>
+                                                        ) : (
+                                                            <React.Fragment>
+                                                                <img src="images/render-2.png" className="fw fh" style={{ objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                                                                <div style={{ position: 'absolute', bottom: 12, right: 12, background: 'var(--dark)', color: 'var(--gold)', padding: '6px 10px', fontSize: 6, border: '2px solid var(--border)' }}>FALLBACK RENDER</div>
+                                                            </React.Fragment>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </React.Fragment>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
-                            <div style={{ background: 'white', borderRadius: 24, padding: 40, boxShadow: 'var(--shadow)', marginBottom: 40 }}>
-                                <h2 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800, letterSpacing: '-0.5px' }}>Design Narrative</h2>
-                                <p style={{ fontSize: 16, lineHeight: 1.8, color: 'var(--text-secondary)', marginBottom: 32 }}>{desc.text}</p>
-                                
-                                <div className="control-group" style={{ background: '#F9FAFB', borderLeft: '4px solid var(--accent)' }}>
-                                    <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', letterSpacing: 1, marginBottom: 8, textTransform: 'uppercase' }}>AI ENGINE PROMPT</div>
-                                    <div style={{ fontSize: 14, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.6 }}>{desc.prompt}</div>
-                                </div>
+                            <div style={{ background: 'var(--surface)', border: '2px solid var(--border)', padding: 24, boxShadow: 'var(--shadow)', marginBottom: 24 }}>
+                                <h2 style={{ fontSize: 12, marginBottom: 8 }}>DESIGN SUMMARY</h2>
+                                <p style={{ fontSize: 8, lineHeight: 2.2, color: 'var(--text-secondary)' }}>{desc.text}</p>
                             </div>
                         </div>
                     )}
@@ -1230,9 +1669,12 @@ function Stage4b({ data, reset }) {
                     <label className="control-label">Inventory List ({data.items.length})</label>
                     <div className="col" style={{ gap: 10, flex: 1, overflowY: 'auto', marginBottom: 32 }}>
                         {data.items.map(it => (
-                            <div key={it.uid} className="flex" style={{ alignItems: 'center', gap: 16, padding: '12px 16px', background: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 12 }}>
-                                <span style={{ fontSize: 24 }}>{it.emoji}</span>
-                                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', textTransform: 'uppercase' }}>{it.label}</span>
+                            <div key={it.uid} className="flex" style={{ alignItems: 'center', gap: 12, padding: '10px 12px', background: 'var(--card)', border: '2px solid var(--border)', boxShadow: '2px 2px 0px var(--border)' }}>
+                                <span style={{ fontSize: 20 }}>{it.emoji}</span>
+                                <div className="flex-1">
+                                    <div style={{ fontSize: 8, color: 'var(--text-primary)', textTransform: 'uppercase' }}>{it.label}</div>
+                                    <div style={{ fontSize: 7, color: 'var(--accent)' }}>{formatCurrency(it.price)}</div>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -1241,6 +1683,25 @@ function Stage4b({ data, reset }) {
                     <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-secondary)', marginTop: 16 }}>Project data and technical exports synchronized.</p>
                 </div>
             </div>
+
+            {/* FULL SCREEN MODAL */}
+            {fullScreen && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(20, 18, 15, 0.95)', display: 'flex', flexDirection: 'column', padding: 40 }} className="anim-fade">
+                    <div className="flex" style={{ justifyContent: 'space-between', marginBottom: 24 }}>
+                        <div style={{ color: 'var(--gold)', fontSize: 18, letterSpacing: 2 }}>{fullScreen === 'photo' ? '📷 YOUR ROOM REFERENCE' : (view3d ? '🏗️ 3D BLUEPRINT (AUTO CAD VIEW)' : '🎨 FINAL VIRTUAL RENDER')}</div>
+                        <button className="btn-outline" style={{ borderColor: 'var(--gold)', color: 'var(--gold)' }} onClick={() => setFullScreen(null)}>X CLOSE</button>
+                    </div>
+                    <div className="flex-1 rel" style={{ border: '4px solid var(--gold)', boxShadow: '0 0 20px rgba(139, 105, 20, 0.5)' }}>
+                        {fullScreen === 'photo' && (data.photo ? <img src={data.photo} className="fw fh" style={{ objectFit: 'contain' }} /> : <div className="fw fh bg-card" />)}
+                        {fullScreen === 'render' && (
+                            view3d ? <Stage4a data={data} isPreviewMode={true} /> : (
+                                imgState === 'loaded' ? <img src={`https://pollinations.ai/p/${encodeURIComponent(desc.prompt)}?width=1600&height=1200&nologo=true&seed=42`} className="fw fh" style={{ objectFit: 'contain' }} /> :
+                                <img src="images/render-2.png" className="fw fh" style={{ objectFit: 'contain' }} />
+                            )
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -1248,15 +1709,29 @@ function Stage4b({ data, reset }) {
 // ===== APP ROOT =====
 function App() {
     const [stage, setStage] = useState(1);
-    const [data, setData] = useState({ photo: null, rt: '', obs: [], sugs: [], items: [] });
+    const [data, setData] = useState({ photo: null, rt: '', obs: [], sugs: [], items: [], prefs: null });
+    const [levelAnim, setLevelAnim] = useState(null);
 
-    const toStage2 = (d) => { setData(p => ({ ...p, photo: d.photo, rt: d.rt })); setStage(2); };
-    const toStage3 = (d) => { setData(p => ({ ...p, obs: d.obs, sugs: d.sugs })); setStage(3); };
-    const toStage4 = (d) => { setData(p => ({ ...p, items: d.items, layoutImg: d.layoutImg })); setStage(d.skip3D ? 4.2 : 4.1); };
+    const transitionToStage = (newStage, levelTitle) => {
+        setLevelAnim(levelTitle);
+        setTimeout(() => {
+            setStage(newStage);
+        }, 2500); // 2.5s to switch background component
+        setTimeout(() => {
+            setLevelAnim(null);
+        }, 3600); // 3.6s total animation
+    };
 
-    const toFinal = () => { setStage(4.2); };
-    const backTo3 = () => setStage(3);
-    const reset = () => { setData({ photo: null, rt: '', obs: [], sugs: [], items: [] }); setStage(1); };
+    const toStage1_5 = (d) => { setData(p => ({ ...p, photo: d.photo, rt: d.rt })); transitionToStage(1.5, "LEVEL 2: STYLE PROFILE"); };
+    const toStage2 = (d) => { setData(p => ({ ...p, prefs: d.prefs })); transitionToStage(2, "LEVEL 3: AI ANALYSIS"); };
+    const toStage3 = (d) => { setData(p => ({ ...p, obs: d.obs, sugs: d.sugs })); transitionToStage(3, "LEVEL 4: DESIGN SANDBOX"); };
+    
+    // skip3D ? 4.2 (Level 6) : 4.1 (Level 5)
+    const toStage4 = (d) => { setData(p => ({ ...p, items: d.items, layoutImg: d.layoutImg })); transitionToStage(d.skip3D ? 4.2 : 4.1, d.skip3D ? "LEVEL 6: REALISTIC RENDER" : "LEVEL 5: 3D BLUEPRINT"); };
+
+    const toFinal = () => { transitionToStage(4.2, "LEVEL 6: REALISTIC RENDER"); };
+    const backTo3 = () => transitionToStage(3, "LEVEL 4: DESIGN SANDBOX");
+    const reset = () => { setData({ photo: null, rt: '', obs: [], sugs: [], items: [], prefs: null }); transitionToStage(1, "LEVEL 1: INITIALIZE"); };
 
     const handleItemsChange = useCallback((newItems) => {
         setData(p => ({ ...p, items: newItems }));
@@ -1266,24 +1741,55 @@ function App() {
         if (window.exportToPDF) window.exportToPDF(data);
     };
 
+    // Handle body overflow: landing page scrolls, app stages don't
+    useEffect(() => {
+        if (stage === 1) {
+            document.body.classList.remove('no-scroll');
+        } else {
+            document.body.classList.add('no-scroll');
+            window.scrollTo(0, 0);
+        }
+    }, [stage]);
+
     let content;
-    if (stage === 1) content = <Stage1 onNext={toStage2} />;
+    if (stage === 1) content = <Stage1 onNext={toStage1_5} />;
+    else if (stage === 1.5) content = <Stage1_5 data={data} onNext={toStage2} />;
     else if (stage === 2) content = <Stage2 data={data} onNext={toStage3} />;
     else if (stage === 3) content = <Stage3 data={data} nextStage={toStage4} onItemsChange={handleItemsChange} />;
     else if (stage === 4.1) content = <Stage4a data={data} nextStage={toFinal} onBack={backTo3} />;
     else if (stage === 4.2) content = <Stage4b data={data} reset={reset} />;
 
+    // Landing page gets its own full-page layout; other stages use the app shell
+    if (stage === 1) {
+        return content;
+    }
+
     return (
         <div style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column' }}>
             <nav className="top-nav">
                 <div className="brand">SOFA, <span>SO GOOD!</span></div>
-                <div className="flex" style={{ gap: 24 }}>
-                    {[1, 2, 3, 4].map(s => (
-                        <div key={s} style={{ 
-                            width: 12, height: 12, borderRadius: '50%', 
-                            background: Math.floor(stage) >= s ? 'var(--accent)' : 'var(--border)',
-                            transition: '0.3s'
-                        }} />
+                <div className="flex" style={{ gap: 24, alignItems: 'center' }}>
+                    {[
+                        { s: 1, lbl: 'LVL 1' },
+                        { s: 1.5, lbl: 'LVL 2' },
+                        { s: 2, lbl: 'LVL 3' },
+                        { s: 3, lbl: 'LVL 4' },
+                        { s: 4.1, lbl: 'LVL 5' },
+                        { s: 4.2, lbl: 'LVL 6' }
+                    ].map(st => (
+                        <div key={st.s} className="flex center" style={{ 
+                            padding: '4px 10px',
+                            background: Math.floor(stage) >= st.s ? 'var(--accent)' : 'var(--card)',
+                            color: Math.floor(stage) >= st.s ? 'var(--surface)' : 'var(--text-secondary)',
+                            border: '2px solid',
+                            borderColor: Math.floor(stage) >= st.s ? 'var(--dark)' : 'var(--border)',
+                            fontSize: 7,
+                            fontWeight: 800,
+                            letterSpacing: 1,
+                            transition: '0.3s step-end'
+                        }}>
+                            {st.lbl}
+                        </div>
                     ))}
                 </div>
                 {stage >= 3 && <button className="btn-outline" style={{ fontSize: 11, padding: '8px 16px' }} onClick={handleExport}>Download Project PDF</button>}
@@ -1292,6 +1798,38 @@ function App() {
                 {stage >= 3 && <StickyBudgetBar items={data.items} roomType={data.rt} />}
                 {content}
             </div>
+
+            {/* GAMIFIED LEVEL OVERLAY */}
+            {levelAnim && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999,
+                    background: 'var(--dark)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    animation: 'flash-level 3.6s ease-in-out forwards'
+                }}>
+                    <style>{`
+                        @keyframes flash-level {
+                            0% { opacity: 0; transform: scale(1.1); }
+                            10% { opacity: 1; transform: scale(1); }
+                            85% { opacity: 1; transform: scale(1); }
+                            100% { opacity: 0; transform: scale(0.9); pointer-events: none; }
+                        }
+                        @keyframes load-bar {
+                            0% { width: 0%; }
+                            100% { width: 100%; }
+                        }
+                    `}</style>
+                    <div style={{ fontSize: 48, color: 'var(--gold)', textShadow: '6px 6px 0px var(--accent)', marginBottom: 20 }}>MISSION</div>
+                    <div style={{ fontSize: 24, color: 'var(--surface)', letterSpacing: 4, border: '4px solid var(--accent)', padding: '16px 32px', background: 'rgba(139,105,20,0.2)', marginBottom: 32 }}>
+                        {levelAnim}
+                    </div>
+                    
+                    {/* Retro Loading Bar */}
+                    <div style={{ width: 400, height: 24, border: '4px solid var(--accent)', background: 'rgba(0,0,0,0.5)', position: 'relative' }}>
+                        <div style={{ height: '100%', background: 'var(--gold)', animation: 'load-bar 2.5s cubic-bezier(0.1, 0.7, 0.3, 1) forwards' }}></div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
