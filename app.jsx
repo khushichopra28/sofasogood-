@@ -14,7 +14,10 @@ const CATALOG = [
     { id: 'rug', label: 'rug', emoji: '🟫', w: 160, h: 90, color: '#8B6B2A', h3d: 0.05, price: 6000 },
     { id: 'dining', label: 'dining', emoji: '🍽️', w: 130, h: 85, color: '#6B4420', h3d: 0.52, price: 15000 },
     { id: 'coffee', label: 'coffee', emoji: '☕', w: 100, h: 55, color: '#9A8C6A', h3d: 0.52, price: 5500 },
-    { id: 'sideboard', label: 'sideboard', emoji: '🪵', w: 130, h: 55, color: '#5A4A2E', h3d: 0.52, price: 10000 }
+    { id: 'sideboard', label: 'sideboard', emoji: '🪵', w: 130, h: 55, color: '#5A4A2E', h3d: 0.52, price: 10000 },
+    { id: 'dining_chair', label: 'chair', emoji: '🪑', w: 50, h: 50, color: '#8B5E3C', h3d: 0.95, price: 4500 },
+    { id: 'nightstand', label: 'nightstand', emoji: '🗃️', w: 50, h: 40, color: '#5A4A2E', h3d: 0.55, price: 3500 },
+    { id: 'ottoman', label: 'ottoman', emoji: '🛋️', w: 80, h: 60, color: '#C9A84C', h3d: 0.4, price: 4000 }
 ];
 
 const ROOM_TYPES = ['Living Room', 'Bedroom', 'Kitchen', 'Home Office', 'Dining Room'];
@@ -1446,6 +1449,32 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
                     }
                     break;
                 }
+                case 'dining_chair': {
+                    const cw = Math.max(tw, 0.4); const cd = Math.max(td, 0.4);
+                    addBox(cw, 0.05, cd, 0, 0.45, 0, mat); // seat
+                    addBox(cw, 0.5, 0.05, 0, 0.725, -cd/2+0.02, mat); // backrest
+                    addBox(0.04, 0.42, 0.04, -cw/2+0.05, 0.21, -cd/2+0.05, matDark);
+                    addBox(0.04, 0.42, 0.04, cw/2-0.05, 0.21, -cd/2+0.05, matDark);
+                    addBox(0.04, 0.42, 0.04, -cw/2+0.05, 0.21, cd/2-0.05, matDark);
+                    addBox(0.04, 0.42, 0.04, cw/2-0.05, 0.21, cd/2-0.05, matDark);
+                    break;
+                }
+                case 'nightstand': {
+                    const nw = Math.max(tw, 0.4); const nd = Math.max(td, 0.3);
+                    addBox(nw, 0.4, nd, 0, 0.2, 0, mat); // body
+                    addBox(nw*0.9, 0.15, 0.02, 0, 0.3, nd/2+0.01, matDark); // drawer
+                    addBox(0.02, 0.02, 0.02, 0, 0.3, nd/2+0.03, mat); // knob
+                    break;
+                }
+                case 'ottoman': {
+                    const ow = Math.max(tw, 0.5); const od = Math.max(td, 0.5);
+                    addBox(ow, 0.3, od, 0, 0.2, 0, fabric);
+                    addBox(0.04, 0.05, 0.04, -ow/2+0.05, 0.025, -od/2+0.05, matDark);
+                    addBox(0.04, 0.05, 0.04, ow/2-0.05, 0.025, -od/2+0.05, matDark);
+                    addBox(0.04, 0.05, 0.04, -ow/2+0.05, 0.025, od/2-0.05, matDark);
+                    addBox(0.04, 0.05, 0.04, ow/2-0.05, 0.025, od/2-0.05, matDark);
+                    break;
+                }
                 default: {
                     const h = 0.8;
                     addBox(tw, h, td, 0, h/2, 0, mat);
@@ -1715,7 +1744,6 @@ function Stage4b({ data, reset }) {
                                                         ) : (
                                                             <React.Fragment>
                                                                 <img src="images/render-2.png" className="fw fh" style={{ objectFit: 'cover', position: 'absolute', inset: 0 }} />
-                                                                <div style={{ position: 'absolute', bottom: 12, right: 12, background: 'var(--dark)', color: 'var(--gold)', padding: '6px 10px', fontSize: 6, border: '2px solid var(--border)' }}>FALLBACK RENDER</div>
                                                             </React.Fragment>
                                                         )}
                                                     </div>
