@@ -166,7 +166,8 @@ function exportToPDF(data) {
     doc.text('Sofa, So Good! — Interior Design Quotation', margin, footerY);
     doc.text('Page 1', pageW - margin, footerY, { align: 'right' });
 
-    doc.save('SofaSoGood_Quotation.pdf');
+    // Open in a new tab instead of silent download so the user can actually see their receipt!
+    window.open(doc.output('bloburl'), '_blank');
 }
 
 // Expose to window for the App component
@@ -176,7 +177,7 @@ window.exportToPDF = exportToPDF;
 function StickyBudgetBar({ items }) {
     const total = items.reduce((s, it) => s + (it.price || 0), 0);
     return (
-        <div className="budget-hud anim-slide-down">
+        <div className="budget-hud anim-slide-down" style={{ zIndex: 90 }}>
             <div className="budget-hud-inner">
                 <div className="flex" style={{ gap: 40, alignItems: 'center' }}>
                     <div className="flex col">
@@ -800,6 +801,18 @@ function Stage3({ data, nextStage, onItemsChange }) {
     const [toast, setToast] = useState('');
     const wrapRef = useRef();
 
+    const [cvSize, setCvSize] = useState({ w: 800, h: 600 });
+    const [showCad, setShowCad] = useState(false);
+
+    useEffect(() => {
+        const updateSize = () => {
+            if (wrapRef.current) setCvSize({ w: wrapRef.current.clientWidth, h: wrapRef.current.clientHeight });
+        };
+        updateSize();
+        window.addEventListener('resize', updateSize);
+        return () => window.removeEventListener('resize', updateSize);
+    }, [wrapRef.current]);
+
     const addItem = (catItem) => {
         const w = wrapRef.current ? wrapRef.current.clientWidth : 800;
         const h = wrapRef.current ? wrapRef.current.clientHeight : 600;
@@ -952,7 +965,7 @@ function Stage3({ data, nextStage, onItemsChange }) {
                     ))}
                 </div>
 
-                <div className="sb">
+                <div className="sb" style={{ minWidth: 380, width: 380, flexShrink: 0, borderLeft: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', flexDirection: 'column' }}>
                     <div className="tab-row">
                         {['items', 'ideas', 'blueprint', 'props'].map(t => (
                             <div key={t} className={`tab-item ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
@@ -1003,10 +1016,13 @@ function Stage3({ data, nextStage, onItemsChange }) {
 
                         {tab === 'blueprint' && (
                             <div>
-                                <label className="control-label">📏 AutoCAD Technical View</label>
-                                <div style={{ width: '100%', height: 320, background: '#111827', borderRadius: 16, overflow: 'hidden', border: '1px solid #1F2937' }}>
-                                    <svg width="100%" height="100%" viewBox="0 0 800 600">
-                                        <rect x="10" y="10" width="780" height="580" fill="none" stroke="#374151" strokeWidth="2" strokeDasharray="6" opacity="0.5" />
+                                <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                                    <label className="control-label" style={{ marginBottom: 0 }}>📏 AutoCAD Technical View</label>
+                                    <button className="btn-outline" style={{ padding: '4px 12px', fontSize: 9 }} onClick={() => setShowCad(true)}>⤢ ENLARGE</button>
+                                </div>
+                                <div style={{ width: '100%', height: 320, background: '#111827', borderRadius: 16, overflow: 'hidden', border: '1px solid #1F2937', cursor: 'pointer' }} onClick={() => setShowCad(true)}>
+                                    <svg width="100%" height="100%" viewBox={`0 0 ${cvSize.w} ${cvSize.h}`}>
+                                        <rect x="10" y="10" width={cvSize.w - 20} height={cvSize.h - 20} fill="none" stroke="#374151" strokeWidth="2" strokeDasharray="6" opacity="0.5" />
                                         {items.map(it => (
                                             <g key={it.uid} transform={`translate(${it.x}, ${it.y})`}>
                                                 <rect width={it.w} height={it.h} fill="rgba(176,141,87,0.1)" stroke="var(--accent)" strokeWidth="1.5" />
@@ -1033,6 +1049,16 @@ function Stage3({ data, nextStage, onItemsChange }) {
                                             <div className="flex" style={{ justifyContent: 'space-between', marginBottom: 10 }}><span style={{ fontSize: 11, fontWeight: 700 }}>DEPTH</span><span style={{ fontSize: 11 }}>{Math.round(curItem.h)}cm</span></div>
                                             <input type="range" style={{ width: '100%' }} min="30" max="200" value={curItem.h} onChange={e => setItems(prev => prev.map(i => i.uid === sel ? { ...i, h: parseInt(e.target.value) } : i))} />
                                         </div>
+                                        <div>
+                                            <div className="flex" style={{ justifyContent: 'space-between', marginBottom: 10 }}><span style={{ fontSize: 11, fontWeight: 700 }}>MATERIAL COLOR</span></div>
+                                            <div className="flex" style={{ gap: 8, flexWrap: 'wrap' }}>
+                                                {['#1a1a1a', '#e5e5e5', '#8B5E3C', '#EF4444', '#3B82F6', '#EAB308', '#22C55E'].map(c => (
+                                                    <div key={c} onClick={() => setItems(prev => prev.map(i => i.uid === sel ? { ...i, color: c } : i))}
+                                                        style={{ width: 28, height: 28, borderRadius: 6, background: c, border: curItem.color === c ? '2px solid var(--accent)' : '1px solid rgba(0,0,0,0.1)', cursor: 'pointer' }} />
+                                                ))}
+                                                <input type="color" value={curItem.color || '#000000'} onChange={e => setItems(prev => prev.map(i => i.uid === sel ? { ...i, color: e.target.value } : i))} style={{ width: 28, height: 28, padding: 0, border: 'none', cursor: 'pointer', borderRadius: 6 }} />
+                                            </div>
+                                        </div>
                                         <button className="btn-modern" style={{ background: '#EF4444', width: '100%' }} onClick={() => delItem(sel)}>Delete Object</button>
                                     </div>
                                 )}
@@ -1047,6 +1073,30 @@ function Stage3({ data, nextStage, onItemsChange }) {
                 </div>
             </div>
             {toast && <div className="abs anim-fade" style={{ bottom: 32, left: '50%', transform: 'translateX(-50%)', background: 'var(--text-primary)', color: 'white', padding: '12px 24px', borderRadius: 100, fontSize: 13, zIndex: 1000 }}>{toast}</div>}
+
+            {showCad && ReactDOM.createPortal(
+                <div style={{ position: 'fixed', inset: 0, zIndex: 999999, background: 'rgba(20, 18, 15, 0.95)', display: 'flex', flexDirection: 'column', padding: 40 }} className="anim-fade">
+                    <div className="flex" style={{ justifyContent: 'space-between', marginBottom: 24 }}>
+                        <div style={{ color: 'var(--gold)', fontSize: 18, letterSpacing: 2 }}>📐 AUTOCAD BLUEPRINT (FULL SCREEN)</div>
+                        <button className="btn-outline" style={{ borderColor: 'var(--gold)', color: 'var(--gold)' }} onClick={() => setShowCad(false)}>X CLOSE</button>
+                    </div>
+                    <div className="flex-1 rel" style={{ border: '4px solid var(--gold)', boxShadow: '0 0 20px rgba(139, 105, 20, 0.5)', background: '#111827', overflow: 'hidden' }}>
+                        <svg width="100%" height="100%" viewBox={`0 0 ${cvSize.w} ${cvSize.h}`}>
+                            <rect x="10" y="10" width={cvSize.w - 20} height={cvSize.h - 20} fill="none" stroke="#374151" strokeWidth="2" strokeDasharray="6" opacity="0.5" />
+                            {items.map(it => (
+                                <g key={it.uid} transform={`translate(${it.x}, ${it.y})`}>
+                                    <rect width={it.w} height={it.h} fill="rgba(176,141,87,0.1)" stroke="var(--accent)" strokeWidth="1.5" />
+                                    <text x={it.w/2} y={it.h/2} textAnchor="middle" fill="#9CA3AF" fontSize="12" fontWeight="700" letterSpacing="2">{it.label.toUpperCase()}</text>
+                                </g>
+                            ))}
+                        </svg>
+                    </div>
+                    <div className="flex center" style={{ marginTop: 32 }}>
+                        <button className="btn-modern fw" style={{ maxWidth: 400, padding: 20 }} onClick={() => { setShowCad(false); nextStage({ items }); }}>CONFIRM & GENERATE 3D PREVIEW →</button>
+                    </div>
+                </div>, 
+                document.body
+            )}
         </div>
     );
 }
@@ -1062,7 +1112,7 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
     
     const [lights, setLights] = useState({ ambient: true, daylight: false, warm: true });
     const [config, setConfig] = useState({ 
-        wallColor: '#eae6df', 
+        wallColor: '#EF4444', 
         floorType: 'walnut', 
         showLeftCurtain: true,
         showBackCurtain: false,
@@ -1433,10 +1483,11 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
         return () => {
             cancelAnimationFrame(frameId);
             ro.disconnect();
+            ro.disconnect();
             if (mountRef.current && renderer.domElement.parentNode === mountRef.current) mountRef.current.removeChild(renderer.domElement);
             renderer.dispose();
         };
-    }, [data.items, config]);
+    }, [data.items]); // Excluded config from dependencies to prevent WebGL refresh glitches!
 
     useEffect(() => {
         if (!lightsRef.current) return;
@@ -1476,7 +1527,7 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
             </div>
 
             {!isPreviewMode && (
-                <div className="sb" style={{ padding: 40, borderLeft: '1px solid var(--border)', background: 'white' }}>
+                <div className="sb" style={{ padding: 40, borderLeft: '1px solid var(--border)', background: 'var(--surface)', minWidth: 380, width: 380, flexShrink: 0 }}>
                     <div className="col" style={{ gap: 40, flex: 1, overflowY: 'auto' }}>
                         <div>
                             <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 20 }}>🔆 Scene Illumination</div>
@@ -1505,7 +1556,7 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
                                 <div>
                                     <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 12 }}>Architectural Wall Palette</div>
                                     <div className="flex" style={{ flexWrap: 'wrap', gap: 8 }}>
-                                        {['#eae6df', '#f5f0e8', '#dcd8cf', '#c4bfb6', '#b5a68e'].map(c => (
+                                        {['#EF4444', '#3B82F6', '#EAB308', '#EC4899', '#22C55E'].map(c => (
                                             <div key={c} onClick={() => setConfig(p => ({...p, wallColor: c}))} 
                                                 style={{ width: 28, height: 28, borderRadius: 8, background: c, border: config.wallColor === c ? '2px solid var(--accent)' : '1px solid var(--border)', cursor: 'pointer', transition: '0.2s' }} />
                                         ))}
@@ -1513,15 +1564,17 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
                                 </div>
                                 <div>
                                     <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 12 }}>Hardwood Selection</div>
-                                    <div className="flex" style={{ gap: 8 }}>
+                                    <div className="flex" style={{ gap: 8, flexWrap: 'wrap' }}>
                                         {[
-                                            { id: 'light', col: '#e8dCC4', label: 'Silver Oak' },
+                                            { id: 'light', col: '#e8dCC4', label: 'Oak' },
                                             { id: 'walnut', col: '#8B5E3C', label: 'Walnut' },
-                                            { id: 'dark', col: '#5c4033', label: 'Ebony' }
+                                            { id: 'dark', col: '#5c4033', label: 'Ebony' },
+                                            { id: 'cherry', col: '#903C22', label: 'Cherry' },
+                                            { id: 'ash', col: '#C1B5A9', label: 'Ash' }
                                         ].map(f => (
                                             <div key={f.id} onClick={() => setConfig(p => ({...p, floorType: f.id}))} 
                                                 style={{ 
-                                                    flex: 1, padding: '12px 6px', borderRadius: 12, fontSize: 11, fontWeight: 700, textAlign: 'center', background: f.col, color: '#fff',
+                                                    flex: '1 1 30%', padding: '12px 6px', borderRadius: 12, fontSize: 11, fontWeight: 700, textAlign: 'center', background: f.col, color: '#fff',
                                                     border: config.floorType === f.id ? '2px solid var(--accent)' : '1px solid rgba(0,0,0,0.1)', cursor: 'pointer', transition: '0.2s'
                                                 }}>{f.label}</div>
                                         ))}
@@ -1543,6 +1596,15 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
                                     <span style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 500 }}>Back Wall Curtains</span>
                                     <div className={`switch-premium ${config.showBackCurtain ? 'active' : ''}`} onClick={() => setConfig(p => ({ ...p, showBackCurtain: !p.showBackCurtain }))}>
                                         <div className="thumb" />
+                                    </div>
+                                </div>
+                                <div style={{ marginTop: 16 }}>
+                                    <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 12 }}>Curtain Fabric Color</div>
+                                    <div className="flex" style={{ gap: 8 }}>
+                                        {['#f5f0e8', '#4A5568', '#1E40AF', '#B91C1C', '#047857'].map(c => (
+                                            <div key={c} onClick={() => setConfig(p => ({...p, curtainColor: c}))} 
+                                                style={{ width: 28, height: 28, borderRadius: 8, background: c, border: config.curtainColor === c ? '2px solid var(--accent)' : '1px solid var(--border)', cursor: 'pointer', transition: '0.2s' }} />
+                                        ))}
                                     </div>
                                 </div>
                             </div>
