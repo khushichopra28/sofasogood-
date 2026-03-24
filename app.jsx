@@ -169,91 +169,47 @@ function exportToPDF(data) {
     doc.save('SofaSoGood_Quotation.pdf');
 }
 
-// ===== STICKY BUDGET BAR =====
-function StickyBudgetBar({ items, roomType, onExport }) {
-    const grandTotal = items.reduce((sum, it) => sum + (it.price || 0), 0);
-    const itemCount = items.length;
-
+// ===== MODERN BUDGET HUD =====
+function StickyBudgetBar({ items }) {
+    const total = items.reduce((s, it) => s + (it.price || 0), 0);
     return (
-        <div className="sticky-budget-bar">
-            <div className="budget-bar-inner">
-                <div className="budget-bar-left">
-                    <div className="budget-bar-label">💰 Total Budget</div>
-                    <div className="budget-bar-amount">{formatCurrency(grandTotal)}</div>
+        <div className="budget-hud anim-slide-down">
+            <div className="budget-hud-inner">
+                <div className="flex" style={{ gap: 40, alignItems: 'center' }}>
+                    <div className="flex col">
+                        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', letterSpacing: 1 }}>PROJECT VALUE</span>
+                        <span style={{ fontSize: 18, fontWeight: 800 }}>{formatCurrency(total)}</span>
+                    </div>
+                    <div className="flex col">
+                        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: 1 }}>ASSET COUNT</span>
+                        <span style={{ fontSize: 18, fontWeight: 800 }}>{items.length} Units</span>
+                    </div>
                 </div>
-                <div className="budget-bar-right">
-                    <div className="budget-bar-count">📦 {itemCount} {itemCount === 1 ? 'block' : 'blocks'}</div>
-                    <button className="btn bg budget-export-btn" onClick={onExport}>
-                        📄 Export PDF
-                    </button>
+                <div className="flex" style={{ gap: 12 }}>
+                    <div style={{ padding: '8px 16px', background: 'rgba(0,0,0,0.05)', borderRadius: 100, fontSize: 11, fontWeight: 600 }}>Active Workspace</div>
                 </div>
             </div>
         </div>
     );
 }
 
-// ===== PIXEL HEART COMPONENT =====
-function PixelHeart({ size = 12, color = '#C45A3A' }) {
+// ===== MODERN UTILITIES =====
+function ModernStatus({ label, value, icon }) {
     return (
-        <svg width={size} height={size} viewBox="0 0 8 7" style={{ imageRendering: 'pixelated' }}>
-            <rect x="1" y="0" width="1" height="1" fill={color} />
-            <rect x="2" y="0" width="1" height="1" fill={color} />
-            <rect x="4" y="0" width="1" height="1" fill={color} />
-            <rect x="5" y="0" width="1" height="1" fill={color} />
-            <rect x="0" y="1" width="1" height="1" fill={color} />
-            <rect x="1" y="1" width="1" height="1" fill={color} />
-            <rect x="2" y="1" width="1" height="1" fill={color} />
-            <rect x="3" y="1" width="1" height="1" fill={color} />
-            <rect x="4" y="1" width="1" height="1" fill={color} />
-            <rect x="5" y="1" width="1" height="1" fill={color} />
-            <rect x="6" y="1" width="1" height="1" fill={color} />
-            <rect x="0" y="2" width="7" height="1" fill={color} />
-            <rect x="1" y="3" width="5" height="1" fill={color} />
-            <rect x="2" y="4" width="3" height="1" fill={color} />
-            <rect x="3" y="5" width="1" height="1" fill={color} />
-        </svg>
+        <div className="flex center" style={{ gap: 12, padding: '12px 20px', background: 'white', borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid var(--border)' }}>
+            <span style={{ fontSize: 24 }}>{icon}</span>
+            <div className="col">
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)' }}>{label}</span>
+                <span style={{ fontSize: 14, fontWeight: 800 }}>{value}</span>
+            </div>
+        </div>
     );
 }
 
-// ===== PIXEL SWORD ICON =====
-function PixelSword({ size = 14 }) {
+function ModernProgress({ pct }) {
     return (
-        <svg width={size} height={size} viewBox="0 0 8 8" style={{ imageRendering: 'pixelated' }}>
-            <rect x="6" y="0" width="1" height="1" fill="#9A8C6A" />
-            <rect x="5" y="1" width="1" height="1" fill="#D4C68E" />
-            <rect x="7" y="1" width="1" height="1" fill="#9A8C6A" />
-            <rect x="4" y="2" width="1" height="1" fill="#D4C68E" />
-            <rect x="6" y="2" width="1" height="1" fill="#9A8C6A" />
-            <rect x="3" y="3" width="1" height="1" fill="#D4C68E" />
-            <rect x="1" y="4" width="1" height="1" fill="#6B4420" />
-            <rect x="2" y="4" width="1" height="1" fill="#C4884A" />
-            <rect x="0" y="5" width="1" height="1" fill="#6B4420" />
-            <rect x="1" y="5" width="1" height="1" fill="#C4884A" />
-            <rect x="2" y="5" width="1" height="1" fill="#6B4420" />
-            <rect x="0" y="6" width="1" height="1" fill="#6B4420" />
-        </svg>
-    );
-}
-
-// ===== PIXEL BLOCK PROGRESS BAR =====
-function PixelProgressBlocks({ pct, total = 20 }) {
-    const filled = Math.round((pct / 100) * total);
-    return (
-        <div style={{ display: 'flex', gap: '2px', marginTop: 12 }}>
-            {Array.from({ length: total }).map((_, i) => (
-                <div key={i} style={{
-                    width: '100%',
-                    height: 12,
-                    background: i < filled
-                        ? (i % 2 === 0 ? '#C4884A' : '#C9A84C')
-                        : 'var(--dim)',
-                    border: '1px solid rgba(0,0,0,0.3)',
-                    transition: 'background 0.1s',
-                    boxShadow: i < filled
-                        ? 'inset 1px 1px 0px rgba(255,255,255,0.2)'
-                        : 'inset 1px 1px 0px rgba(0,0,0,0.2)'
-                }} />
-            ))}
+        <div style={{ width: '100%', height: 6, background: 'var(--border)', borderRadius: 10, overflow: 'hidden', marginTop: 12 }}>
+            <div style={{ width: `${pct}%`, height: '100%', background: 'var(--accent)', transition: 'width 0.6s cubic-bezier(0.22, 1, 0.36, 1)' }} />
         </div>
     );
 }
@@ -262,184 +218,122 @@ function PixelProgressBlocks({ pct, total = 20 }) {
 function FloatingFurniture() {
     const canvasRef = useRef(null);
     const furnitureRef = useRef([]);
-    const mouseRef = useRef({ x: -2000, y: -2000 });
 
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        let animationFrameId;
+        let frame;
 
-        const emojis = ['🛋️', '💺', '🛏️', '🗄️', '🚪', '🌿', '🪵'];
-        
         const resize = () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            if (furnitureRef.current.length === 0) {
-              furnitureRef.current = Array.from({ length: 22 }).map(() => ({
-                  x: Math.random() * canvas.width,
-                  y: Math.random() * canvas.height,
-                  vx: (Math.random() - 0.5) * 1.5,
-                  vy: (Math.random() - 0.5) * 1.5,
-                  emoji: emojis[Math.floor(Math.random() * emojis.length)],
-                  rotation: Math.random() * Math.PI * 2,
-                  rv: (Math.random() - 0.5) * 0.02,
-                  size: 50 + Math.random() * 50
-              }));
-            }
+            furnitureRef.current = Array.from({ length: 15 }).map(() => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: (Math.random() - 0.5) * 0.4,
+                size: 40 + Math.random() * 40,
+                opacity: 0.05 + Math.random() * 0.1,
+                emoji: ['🪴', '🪑', '🛋️', '🛋️'][Math.floor(Math.random() * 4)]
+            }));
         };
-        window.addEventListener('resize', resize);
-        resize();
-
-        const handleMouseMove = (e) => {
-            mouseRef.current = { x: e.clientX, y: e.clientY };
-        };
-        const handleMouseDown = (e) => {
-            const mx = e.clientX;
-            const my = e.clientY;
-            furnitureRef.current.forEach(f => {
-                const dx = f.x - mx;
-                const dy = f.y - my;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 350) {
-                    const power = (350 - dist) / 350;
-                    f.vx += (dx / (dist || 1)) * power * 35;
-                    f.vy += (dy / (dist || 1)) * power * 35;
-                    f.rv += (Math.random() - 0.5) * 0.4;
-                }
-            });
-        };
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mousedown', handleMouseDown);
 
         const render = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
             furnitureRef.current.forEach(f => {
                 f.x += f.vx;
                 f.y += f.vy;
-                f.rotation += f.rv;
-
-                if (f.x < -150) f.x = canvas.width + 150;
-                if (f.x > canvas.width + 150) f.x = -150;
-                if (f.y < -150) f.y = canvas.height + 150;
-                if (f.y > canvas.height + 150) f.y = -150;
-
-                const dx = f.x - mouseRef.current.x;
-                const dy = f.y - mouseRef.current.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 180) {
-                    const force = (180 - dist) / 180;
-                    f.vx += (dx / (dist || 1)) * force * 3;
-                    f.vy += (dy / (dist || 1)) * force * 3;
-                }
-
-                f.vx *= 0.96;
-                f.vy *= 0.96;
-                f.rv *= 0.98;
-                f.vx += (Math.random() - 0.5) * 0.1;
-                f.vy += (Math.random() - 0.5) * 0.1;
+                if (f.x < -100) f.x = canvas.width + 100;
+                if (f.x > canvas.width + 100) f.x = -100;
+                if (f.y < -100) f.y = canvas.height + 100;
+                if (f.y > canvas.height + 100) f.y = -100;
 
                 ctx.save();
-                ctx.translate(f.x, f.y);
-                ctx.rotate(f.rotation);
+                ctx.globalAlpha = f.opacity;
                 ctx.font = `${f.size}px serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                // User asked for solid opacity
-                ctx.globalAlpha = 1.0;
-                ctx.fillText(f.emoji, 0, 0);
+                ctx.fillText(f.emoji, f.x, f.y);
                 ctx.restore();
             });
-
-            animationFrameId = requestAnimationFrame(render);
+            frame = requestAnimationFrame(render);
         };
+
+        window.addEventListener('resize', resize);
+        resize();
         render();
 
         return () => {
             window.removeEventListener('resize', resize);
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mousedown', handleMouseDown);
-            cancelAnimationFrame(animationFrameId);
+            cancelAnimationFrame(frame);
         };
     }, []);
 
-    return <canvas ref={canvasRef} style={{ 
-      position: 'fixed', top: 0, left: 0, 
-      width: '100%', height: '100%', 
-      pointerEvents: 'none', zIndex: 0 
-    }} />;
+    return <canvas ref={canvasRef} style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }} />;
 }
 
 // ===== STAGE 1: UPLOAD / ROOM SELECT =====
 function Stage1({ onNext }) {
-    const [photo, setPhoto] = useState(null);
-    const [rt, setRt] = useState('');
+    const [dragging, setDragging] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const handleFile = (file) => {
-        if (!file || !file.type.startsWith('image/')) return;
-        const r = new FileReader();
-        r.onload = e => setPhoto(e.target.result);
-        r.readAsDataURL(file);
+    const handleUpload = (file) => {
+        if (!file) return;
+        setLoading(true);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            onNext({ photo: e.target.result, rt: 'Living Room' });
+            setLoading(false);
+        };
+        reader.readAsDataURL(file);
     };
 
     return (
-        <div className="flex center fh fw fi">
-            <div style={{
-                maxWidth: 540, width: '100%', padding: '32px',
-                background: 'var(--surface)',
-                border: '3px solid',
-                borderColor: '#C8B898 #A89878 #A89878 #C8B898',
-                boxShadow: 'inset 2px 2px 0px rgba(255,255,255,0.6), inset -2px -2px 0px rgba(0,0,0,0.08), 6px 6px 0px rgba(0,0,0,0.15)',
-                textAlign: 'center'
-            }}>
-                {/* Pixel Title */}
-                <h1 className="wm" style={{ marginBottom: 4 }}>SOFA, SO GOOD!</h1>
-                <p style={{
-                    color: 'var(--copper)', letterSpacing: '1px', fontSize: '8px',
-                    textTransform: 'uppercase', marginBottom: '24px'
-                }}>
-                    Play. Design. Visualize.
+        <div className="flex center fh fw col anim-fade" style={{ background: 'var(--bg)', padding: 40 }}>
+            <div style={{ maxWidth: 640, textAlign: 'center' }}>
+                <h1 className="brand" style={{ fontSize: 42, marginBottom: 12 }}>SOFA, <span>SO GOOD!</span></h1>
+                <p style={{ fontSize: 16, color: 'var(--text-secondary)', marginBottom: 48, fontWeight: 300 }}>
+                    Experience the future of interior design with our high-end AI vision engine.
                 </p>
-
-                {!photo ? (
-                    <div className="dz" onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); }} onDragOver={e => e.preventDefault()}>
-                        <input type="file" accept="image/*" onChange={e => handleFile(e.target.files[0])} />
-                        <div style={{ fontSize: '32px', marginBottom: '8px' }}>🏠</div>
-                        <p style={{ fontSize: '7px', color: 'var(--muted)', lineHeight: '2' }}>
-                            Drop room photo here<br />or click to browse
-                        </p>
-                    </div>
-                ) : (
-                    <div className="rel" style={{
-                        width: '100%', height: '180px', overflow: 'hidden',
-                        border: '3px solid var(--dim)',
-                        boxShadow: 'inset 2px 2px 0px rgba(0,0,0,0.3)'
-                    }}>
-                        <img src={photo} style={{ width: '100%', height: '100%', objectFit: 'cover', imageRendering: 'auto' }} />
-                        <button className="abs" style={{
-                            top: 6, right: 6, background: 'rgba(0,0,0,0.7)',
-                            color: 'var(--text)', padding: '4px 8px', fontSize: '7px',
-                            border: '2px solid var(--dim)', cursor: 'pointer'
-                        }} onClick={() => setPhoto(null)}>✕</button>
-                    </div>
-                )}
-
-                <div style={{
-                    margin: '24px 0 12px', fontSize: '7px', color: 'var(--muted)',
-                    textAlign: 'left', textTransform: 'uppercase', letterSpacing: '1px'
-                }}>
-                    ▸ Select Biome
-                </div>
-                <div className="flex" style={{ gap: '6px', flexWrap: 'wrap', marginBottom: '28px' }}>
-                    {ROOM_TYPES.map(t => (
-                        <div key={t} className={`chip ${rt === t ? 'act' : ''}`} onClick={() => setRt(t)}>{t}</div>
-                    ))}
+                
+                <div 
+                    className={`control-group ${dragging ? 'dragging' : ''}`}
+                    onDragOver={e => { e.preventDefault(); setDragging(true); }}
+                    onDragLeave={() => setDragging(false)}
+                    onDrop={e => { e.preventDefault(); setDragging(false); handleUpload(e.dataTransfer.files[0]); }}
+                    onClick={() => document.getElementById('file-upload').click()}
+                    style={{
+                        padding: 64,
+                        background: 'white',
+                        border: dragging ? '2px solid var(--accent)' : '2px dashed var(--border)',
+                        borderRadius: 24,
+                        cursor: 'pointer',
+                        transition: '0.3s',
+                        boxShadow: 'var(--shadow)'
+                    }}
+                >
+                    <input id="file-upload" type="file" hidden onChange={e => handleUpload(e.target.files[0])} />
+                    <div style={{ fontSize: 48, marginBottom: 20 }}>📸</div>
+                    <h2 style={{ fontSize: 20, marginBottom: 8, color: 'var(--text-primary)' }}>Initialize Spatial Scan</h2>
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Drag & drop your floorplan or a photo of your current space</p>
+                    <button className="btn-modern" style={{ marginTop: 24 }}>Browse Local Files</button>
                 </div>
 
-                <button className="btn bg fw" style={{ padding: '12px', fontSize: '8px' }} disabled={!rt} onClick={() => onNext({ photo, rt })}>
-                    ⛏️ Analyze Room →
-                </button>
+                <div className="flex center" style={{ marginTop: 40, gap: 40 }}>
+                    <div className="flex center" style={{ gap: 10 }}>
+                        <div style={{ width: 8, height: 8, background: 'var(--accent)', borderRadius: '50%' }} />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>AI Precision</span>
+                    </div>
+                    <div className="flex center" style={{ gap: 10 }}>
+                        <div style={{ width: 8, height: 8, background: 'var(--accent)', borderRadius: '50%' }} />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>Real-Time 3D</span>
+                    </div>
+                </div>
             </div>
+
+            {loading && (
+                <div className="abs fw fh flex center col" style={{ background: 'rgba(255,255,255,0.7)', zIndex: 1000 }}>
+                    <div style={{ width: 40, height: 40, border: '4px solid #eee', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                </div>
+            )}
         </div>
     );
 }
@@ -447,7 +341,7 @@ function Stage1({ onNext }) {
 // ===== STAGE 2: AI ANALYSIS =====
 function Stage2({ data, onNext }) {
     const [pct, setPct] = useState(0);
-    const [lbl, setLbl] = useState("Initializing pixel scan...");
+    const [lbl, setLbl] = useState("Initializing vision engine...");
     const [findings, setFindings] = useState([]);
 
     useEffect(() => {
@@ -456,57 +350,41 @@ function Stage2({ data, onNext }) {
             p += Math.random() * 8 + 2;
             if (p > 100) p = 100;
             setPct(p);
-            if (p >= 28 && p < 58) setLbl("Mining spatial data...");
-            else if (p >= 58 && p < 88) setLbl("Crafting furniture matches...");
-            else if (p >= 88 && p < 100) setLbl("Enchanting design hints...");
+            if (p >= 28 && p < 58) setLbl("Detecting architectural volumes...");
+            else if (p >= 58 && p < 88) setLbl("Sourcing optimal furniture geometries...");
+            else if (p >= 88 && p < 100) setLbl("Finalizing spatial analysis...");
 
             if (p >= 100) {
                 clearInterval(i);
                 setTimeout(() => onNext({
-                    obs: ["Minimalist white walls with a large architectural archway", "Light-toned wooden plank flooring", "High ceiling with warm ambient lighting", "Open floor plan with clean modern lines"],
-                    sugs: [{ id: 'sofa', reason: 'Anchors the room core' }, { id: 'rug', reason: 'Defines the center zone' }, { id: 'plant', reason: 'Adds organic life blocks' }]
-                }), 700);
+                    obs: ["Deep walnut architectural textures", "Neutral beige surfaces with matte finish", "Natural lateral lighting from multiple zones", "Open-concept modern living plan"],
+                    sugs: [{ id: 'sofa', reason: 'High-impact focal point for the main lounge' }, { id: 'rug', reason: 'Defines the central seating area' }, { id: 'plant', reason: 'Injects organic visual depth' }]
+                }), 800);
             }
-        }, 200);
+        }, 120);
 
-        const to1 = setTimeout(() => setFindings(f => [...f, "Biome: " + data.rt]), 600);
-        const to2 = setTimeout(() => setFindings(f => [...f, "Light Level: Warm ☀️"]), 1400);
-        const to3 = setTimeout(() => setFindings(f => [...f, "Style: Modern Pixel 🎮"]), 2200);
+        const to1 = setTimeout(() => setFindings(f => [...f, "Space: " + data.rt]), 400);
+        const to2 = setTimeout(() => setFindings(f => [...f, "Lighting: Dual Zone Ambient"]), 1000);
+        const to3 = setTimeout(() => setFindings(f => [...f, "Style Target: Contemporary Luxury"]), 1600);
 
         return () => { clearInterval(i); clearTimeout(to1); clearTimeout(to2); clearTimeout(to3); };
     }, [data, onNext]);
 
     return (
-        <div className="flex center fh fw rel fi">
-            {data.photo && <img src={data.photo} className="abs fw fh" style={{ objectFit: 'cover', filter: 'brightness(0.4) blur(6px)', zIndex: 0, imageRendering: 'auto' }} />}
-            <div className="col rel" style={{
-                zIndex: 1, width: 420,
-                background: 'rgba(245,240,232,0.95)',
-                padding: 32,
-                border: '3px solid',
-                borderColor: '#C8B898 #A89878 #A89878 #C8B898',
-                boxShadow: '6px 6px 0px rgba(0,0,0,0.15)'
-            }}>
-                <div className="flex center" style={{ gap: 8, marginBottom: 4 }}>
-                    <PixelSword size={16} />
-                    <h2 style={{ fontSize: 12, color: 'var(--copper)' }}>AI Analysis</h2>
-                    <PixelSword size={16} />
+        <div className="flex center fh fw rel anim-fade" style={{ background: '#F9FAFB' }}>
+            <div className="col" style={{ width: 440, background: 'white', padding: 48, borderRadius: 28, boxShadow: 'var(--shadow-lg)' }}>
+                <div style={{ textAlign: 'center', marginBottom: 40 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--accent)', letterSpacing: 2, marginBottom: 8 }}>AI VISION ENGINE</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{lbl}</div>
                 </div>
-                <div style={{ fontSize: 7, color: 'var(--muted)', marginBottom: 16, textAlign: 'center' }}>{lbl}</div>
 
-                <PixelProgressBlocks pct={pct} />
+                <ModernProgress pct={pct} />
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)', textAlign: 'right', marginTop: 8 }}>{Math.round(pct)}% COMPLETE</div>
 
-                <div style={{ fontSize: 7, color: 'var(--dim)', textAlign: 'right', marginTop: 4 }}>{Math.round(pct)}%</div>
-
-                <div className="col" style={{ marginTop: 20, gap: 10 }}>
+                <div className="col" style={{ marginTop: 40, gap: 16 }}>
                     {findings.map((f, i) => (
-                        <div key={i} className="flex fi" style={{ alignItems: 'center', gap: 8, fontSize: 8 }}>
-                            <div style={{
-                                width: 8, height: 8,
-                                background: 'var(--copper)',
-                                border: '1px solid #6B4420',
-                                flexShrink: 0
-                            }}></div>
+                        <div key={i} className="flex" style={{ alignItems: 'center', gap: 16, fontSize: 14, color: 'var(--text-primary)', fontWeight: 500 }}>
+                            <div style={{ width: 8, height: 8, background: 'var(--accent)', borderRadius: '50%' }} />
                             {f}
                         </div>
                     ))}
@@ -635,104 +513,63 @@ function Stage3({ data, nextStage, onItemsChange }) {
 
 
     return (
-        <div className="flex col fw fh fi">
-            {toast && <div className="toast">{toast}</div>}
-            <div className="tbar">
-                <div className="flex center" style={{ gap: 12 }}>
-                    <div className="wm" style={{ fontSize: 11 }}>SOFA, SO GOOD!</div>
-                    <div className="flex" style={{ gap: 3 }}>
-                        {[1, 2, 3, 4].map(s => <div key={s} style={{
-                            width: s === 3 ? 16 : 8, height: 8,
-                            background: s < 4 ? 'var(--copper)' : 'var(--dim)',
-                            transition: 'all 0.2s',
-                            border: '1px solid rgba(0,0,0,0.3)'
-                        }} />)}
-                    </div>
-                </div>
-                <div className="flex center" style={{ gap: 8 }}>
-                    <button className="btn bgo" style={{ fontSize: 7 }} onClick={() => setHints(!hints)}>
-                        {hints ? '👁️ Hide Hints' : '👁️ Show Hints'}
-                    </button>
-                    <button className="btn bg" style={{ fontSize: 7 }} onClick={() => nextStage({ items })}>
-                        3D Preview →
-                    </button>
-                </div>
-            </div>
-
-            <div className="flex" style={{ flex: 1, minHeight: 0 }}>
-                <div className="cv-wrap craft-bg" ref={wrapRef} onMouseDown={(e) => { if (e.target === wrapRef.current || e.target.classList.contains('cv-grid')) setSel(null); }}>
-                    {data.photo
-                        ? <img src={data.photo} className="cv-bg" />
-                        : <div className="cv-bg" style={{ background: 'linear-gradient(to bottom, #EDE8DE, #F5F0E8)', opacity: 1 }} />
-                    }
+        <div className="flex fw fh col anim-fade" style={{ background: 'var(--bg)' }}>
+            <div className="flex flex-1" style={{ minHeight: 0 }}>
+                <div className="viewport flex-1 rel" ref={wrapRef} onMouseDown={(e) => { if (e.target === wrapRef.current) setSel(null); }}>
                     <div className="cv-grid"></div>
-
+                    
                     {/* Ghost hints */}
                     {hints && data.sugs.slice(0, 2).map((s, i) => {
                         const cat = CATALOG.find(c => c.id === s.id);
                         if (!cat) return null;
                         return (
-                            <div key={i} className="ghost" style={{ left: 200 + i * 200, top: 200 + i * 100, width: cat.w, height: cat.h }}>
-                                <div className="ghost-lbl">AI: {cat.label}</div>
+                            <div key={i} style={{ position: 'absolute', left: 200 + i * 200, top: 200 + i * 100, width: cat.w, height: cat.h, border: '2px dashed var(--accent)', opacity: 0.3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 700 }}>AI: {cat.label}</div>
                             </div>
                         );
                     })}
 
-                    {/* Furniture Items */}
+                    {/* Items */}
                     {items.map(it => (
-                        <div key={it.uid} className={`f-item ${sel === it.uid ? 'sel' : ''}`}
-                            style={{ left: it.x, top: it.y, width: it.w, height: it.h, '--item-col': it.color }}
-                            onMouseDown={(e) => { setSel(it.uid); setTab('props'); setDrag({ type: 'move', uid: it.uid, startX: e.clientX, startY: e.clientY, initX: it.x, initY: it.y }); }}>
-                            {it.emoji}
-                            {sel === it.uid && <div className="f-lbl">{it.label}</div>}
-                            {sel === it.uid && <div className="del-btn" onMouseDown={(e) => { e.stopPropagation(); delItem(it.uid); }}>✕</div>}
-                            {sel === it.uid && <div className="rh" onMouseDown={(e) => { e.stopPropagation(); setDrag({ type: 'resize', uid: it.uid, startX: e.clientX, startY: e.clientY, initW: it.w, initH: it.h }); }} />}
+                        <div key={it.uid} 
+                            style={{ 
+                                position: 'absolute', left: it.x, top: it.y, width: it.w, height: it.h, 
+                                background: it.color, cursor: 'grab', zIndex: sel === it.uid ? 100 : 5,
+                                border: sel === it.uid ? '3px solid var(--accent)' : '1px solid rgba(0,0,0,0.1)',
+                                boxShadow: sel === it.uid ? 'var(--shadow-lg)' : 'var(--shadow)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                borderRadius: 4
+                            }}
+                            onMouseDown={(e) => { e.stopPropagation(); setSel(it.uid); setTab('props'); setDrag({ type: 'move', uid: it.uid, startX: e.clientX, startY: e.clientY, initX: it.x, initY: it.y }); }}>
+                            <div style={{ fontSize: 24, userSelect: 'none' }}>{it.emoji}</div>
+                            {sel === it.uid && (
+                                <div style={{ position: 'absolute', bottom: -10, right: -10, width: 24, height: 24, background: 'var(--accent)', cursor: 'nwse-resize', borderRadius: '50%', border: '3px solid white' }}
+                                    onMouseDown={(e) => { e.stopPropagation(); setDrag({ type: 'resize', uid: it.uid, startX: e.clientX, startY: e.clientY, initW: it.w, initH: it.h }); }} />
+                            )}
                         </div>
                     ))}
-
-                    <div className="btbar">
-                        <button className="btn bgo" style={{ fontSize: 7 }} onClick={() => setItems([])}>Clear</button>
-                        <button className="btn bgo" style={{ fontSize: 7 }} disabled={!sel} onClick={() => delItem(sel)}>Del</button>
-                        <button className="btn bgo" style={{ fontSize: 7 }} onClick={() => showToast('⛏️ Drag items. Resize with corner block.')}>?</button>
-                    </div>
                 </div>
 
-                {/* SIDEBAR — INVENTORY */}
                 <div className="sb">
-                    <div className="flex" style={{ borderBottom: '3px solid var(--dim)' }}>
-                        {['items', 'ideas', 'props'].map(t => (
-                            <div key={t} style={{
-                                flex: 1, padding: '10px 0', textAlign: 'center',
-                                fontSize: 7, textTransform: 'uppercase', cursor: 'pointer',
-                                borderBottom: tab === t ? '3px solid var(--copper)' : '3px solid transparent',
-                                color: tab === t ? 'var(--copper)' : 'var(--muted)',
-                                fontWeight: 400, background: tab === t ? 'rgba(196,136,74,0.05)' : 'transparent'
-                            }} onClick={() => setTab(t)}>
-                                {t === 'items' ? '📦 ' : t === 'ideas' ? '💡 ' : '🔧 '}{t}
+                    <div className="tab-row">
+                        {['items', 'ideas', 'blueprint', 'props'].map(t => (
+                            <div key={t} className={`tab-item ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
+                                {t === 'items' ? 'Catalog' : t === 'ideas' ? 'AI Guide' : t === 'blueprint' ? 'Sketch' : 'Edit'}
                             </div>
                         ))}
                     </div>
 
-                    <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+                    <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
                         {tab === 'items' && (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                                {CATALOG.map(c => {
-                                    const added = items.some(i => i.id === c.id);
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                {CATALOG.map(cat => {
+                                    const added = items.some(i => i.id === cat.id);
                                     return (
-                                        <div key={c.id} onClick={() => addItem(c)} style={{
-                                            background: 'var(--card)',
-                                            border: '3px solid',
-                                            borderColor: '#5A4A2E #3A2E1A #3A2E1A #5A4A2E',
-                                            padding: '12px 6px',
-                                            display: 'flex', flexDirection: 'column',
-                                            alignItems: 'center', gap: 6, cursor: 'pointer',
-                                            transition: 'all 0.1s', position: 'relative',
-                                            boxShadow: '2px 2px 0px rgba(0,0,0,0.4)'
-                                        }}>
-                                            <div style={{ fontSize: 28 }}>{c.emoji}</div>
-                                            <div style={{ fontSize: 6, textTransform: 'uppercase', color: 'var(--muted)' }}>{c.label}</div>
-                                            <div style={{ fontSize: 6, color: 'var(--copper)', fontFamily: 'Press Start 2P, monospace' }}>{formatCurrency(c.price)}</div>
-                                            {added && <div className="abs" style={{ top: 3, right: 3, color: 'var(--green)', fontSize: 7 }}>✓</div>}
+                                        <div key={cat.id} className="product-card" onClick={() => addItem(cat)}>
+                                            <div style={{ fontSize: 32, marginBottom: 8 }}>{cat.emoji}</div>
+                                            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>{cat.label}</div>
+                                            <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600 }}>{formatCurrency(cat.price)}</div>
+                                            {added && <div className="abs" style={{ top: 8, right: 8, color: 'var(--accent)', fontSize: 12 }}>✓</div>}
                                         </div>
                                     );
                                 })}
@@ -740,73 +577,74 @@ function Stage3({ data, nextStage, onItemsChange }) {
                         )}
 
                         {tab === 'ideas' && (
-                            <div className="col" style={{ gap: 12 }}>
-                                <div style={{
-                                    paddingLeft: 10, borderLeft: '3px solid var(--copper)',
-                                    fontSize: 8, color: 'var(--text)', marginBottom: 12
-                                }}>
-                                    {data.obs.map((o, i) => <p key={i} style={{ marginBottom: 6, lineHeight: '2' }}>▸ {o}</p>)}
+                            <div className="col" style={{ gap: 20 }}>
+                                <div className="control-group">
+                                    <label className="control-label">AI SPATIAL ANALYSIS</label>
+                                    {data.obs.map((o, i) => <p key={i} style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.6 }}>▸ {o}</p>)}
                                 </div>
                                 {data.sugs.map((s, i) => {
                                     const c = CATALOG.find(cat => cat.id === s.id);
                                     if (!c) return null;
                                     return (
-                                        <div key={i} style={{
-                                            padding: 12, background: 'var(--card)',
-                                            border: '3px solid',
-                                            borderColor: '#5A4A2E #3A2E1A #3A2E1A #5A4A2E',
-                                            boxShadow: '2px 2px 0px rgba(0,0,0,0.4)'
-                                        }}>
-                                            <div className="flex center" style={{ justifyContent: 'flex-start', gap: 10, marginBottom: 6 }}>
-                                                <span style={{ fontSize: 20 }}>{c.emoji}</span>
-                                                <span style={{ fontSize: 8, textTransform: 'uppercase', color: 'var(--copper)' }}>{c.label}</span>
+                                        <div key={i} className="product-card" style={{ flexDirection: 'row', textAlign: 'left', padding: 12, gap: 16 }}>
+                                            <div style={{ fontSize: 24 }}>{c.emoji}</div>
+                                            <div className="flex-1">
+                                                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{c.label}</div>
+                                                <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '4px 0 10px' }}>{s.reason}</p>
+                                                <button className="btn-modern" style={{ padding: '6px 12px', fontSize: 10 }} onClick={() => addItem(c)}>Add Item</button>
                                             </div>
-                                            <p style={{ fontSize: 7, color: 'var(--muted)', marginBottom: 12, lineHeight: '2' }}>{s.reason}</p>
-                                            <button className="btn bgh fw" style={{ padding: 6, fontSize: 7 }} onClick={() => { addItem(c); showToast(`⛏️ ${c.label} placed!`); }}>+ Craft</button>
                                         </div>
                                     );
                                 })}
                             </div>
                         )}
 
+                        {tab === 'blueprint' && (
+                            <div>
+                                <label className="control-label">📏 AutoCAD Technical View</label>
+                                <div style={{ width: '100%', height: 320, background: '#111827', borderRadius: 16, overflow: 'hidden', border: '1px solid #1F2937' }}>
+                                    <svg width="100%" height="100%" viewBox="0 0 800 600">
+                                        <rect x="10" y="10" width="780" height="580" fill="none" stroke="#374151" strokeWidth="2" strokeDasharray="6" opacity="0.5" />
+                                        {items.map(it => (
+                                            <g key={it.uid} transform={`translate(${it.x}, ${it.y})`}>
+                                                <rect width={it.w} height={it.h} fill="rgba(176,141,87,0.1)" stroke="var(--accent)" strokeWidth="1.5" />
+                                                <text x={it.w/2} y={it.h/2} textAnchor="middle" fill="#9CA3AF" fontSize="10">{it.label.toUpperCase()}</text>
+                                            </g>
+                                        ))}
+                                    </svg>
+                                </div>
+                            </div>
+                        )}
+
                         {tab === 'props' && (
                             <div>
-                                {!curItem ? <div style={{ fontSize: 7, color: 'var(--muted)', textAlign: 'center', marginTop: 32, lineHeight: '2.5' }}>Select a block<br />to edit properties</div> : (
-                                    <div className="col fi" style={{ gap: 18 }}>
-                                        <div className="flex center" style={{ fontSize: 36 }}>{curItem.emoji}</div>
+                                {!curItem ? (
+                                    <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: 40, fontSize: 13 }}>Select an object to customize</div>
+                                ) : (
+                                    <div className="col" style={{ gap: 32 }}>
+                                        <div style={{ textAlign: 'center', fontSize: 64, marginBottom: 12 }}>{curItem.emoji}</div>
                                         <div>
-                                            <div className="flex" style={{ justifyContent: 'space-between', fontSize: 7, color: 'var(--muted)', marginBottom: 6 }}><span>Width</span> <span>{Math.round(curItem.w)}px</span></div>
-                                            <input type="range" min="40" max="280" value={curItem.w} onChange={e => setItems(prev => prev.map(i => i.uid === sel ? { ...i, w: parseInt(e.target.value) } : i))} />
+                                            <div className="flex" style={{ justifyContent: 'space-between', marginBottom: 10 }}><span style={{ fontSize: 11, fontWeight: 700 }}>WIDTH</span><span style={{ fontSize: 11 }}>{Math.round(curItem.w)}cm</span></div>
+                                            <input type="range" style={{ width: '100%' }} min="40" max="280" value={curItem.w} onChange={e => setItems(prev => prev.map(i => i.uid === sel ? { ...i, w: parseInt(e.target.value) } : i))} />
                                         </div>
                                         <div>
-                                            <div className="flex" style={{ justifyContent: 'space-between', fontSize: 7, color: 'var(--muted)', marginBottom: 6 }}><span>Height</span> <span>{Math.round(curItem.h)}px</span></div>
-                                            <input type="range" min="30" max="200" value={curItem.h} onChange={e => setItems(prev => prev.map(i => i.uid === sel ? { ...i, h: parseInt(e.target.value) } : i))} />
+                                            <div className="flex" style={{ justifyContent: 'space-between', marginBottom: 10 }}><span style={{ fontSize: 11, fontWeight: 700 }}>DEPTH</span><span style={{ fontSize: 11 }}>{Math.round(curItem.h)}cm</span></div>
+                                            <input type="range" style={{ width: '100%' }} min="30" max="200" value={curItem.h} onChange={e => setItems(prev => prev.map(i => i.uid === sel ? { ...i, h: parseInt(e.target.value) } : i))} />
                                         </div>
-                                        <div>
-                                            <div style={{ fontSize: 7, color: 'var(--muted)', marginBottom: 8 }}>Block Color</div>
-                                            <div className="flex" style={{ flexWrap: 'wrap', gap: 6 }}>
-                                                {SWATCHES.map(sw => (
-                                                    <div key={sw} className={`swatch ${curItem.color === sw ? 'sel' : ''}`} style={{ background: sw }} onClick={() => setItems(prev => prev.map(i => i.uid === sel ? { ...i, color: sw } : i))} />
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <button className="btn" style={{ background: 'var(--red)', color: '#fff', marginTop: 12, padding: '10px', fontSize: 7, border: '3px solid #8B3020' }} onClick={() => delItem(sel)}>🗑️ Destroy Block</button>
+                                        <button className="btn-modern" style={{ background: '#EF4444', width: '100%' }} onClick={() => delItem(sel)}>Delete Object</button>
                                     </div>
                                 )}
                             </div>
                         )}
                     </div>
 
-                    <div className="col" style={{ padding: 16, borderTop: '3px solid var(--dim)', background: 'var(--card)' }}>
-                        <div style={{ fontSize: 7, color: 'var(--muted)', marginBottom: 10, textAlign: 'center' }}>📦 Blocks placed: {items.length}</div>
-                        <button className="btn bg fw" style={{ fontSize: 7, padding: 10 }} onClick={() => nextStage({ items })}>Preview 3D →</button>
-                        {layoutImg && <img src={layoutImg} style={{width: '100%', height: 80, objectFit: 'cover', border: '2px solid var(--copper)', marginBottom: 8}} alt="Layout Preview" />}
-                        <button className="btn bgo fw" style={{ fontSize: 7 }} onClick={generateLayoutImage} disabled={!data.photo && items.length === 0}>📸 Generate Layout Image</button>
-                        <button className="btn bgo fw" style={{ marginTop: 6, border: 'none', fontSize: 7 }} onClick={() => nextStage({ items, layoutImg, skip3D: true })}>Skip to Render</button>
-
+                    <div style={{ padding: 24, borderTop: '1px solid var(--border)' }}>
+                        <button className="btn-modern fw" style={{ padding: 14 }} onClick={() => nextStage({ items })}>Generate 3D Preview →</button>
+                        <button className="btn-outline fw" style={{ marginTop: 12, padding: 12 }} onClick={() => nextStage({ items, skip3D: true })}>Skip Visualization</button>
                     </div>
                 </div>
             </div>
+            {toast && <div className="abs anim-fade" style={{ bottom: 32, left: '50%', transform: 'translateX(-50%)', background: 'var(--text-primary)', color: 'white', padding: '12px 24px', borderRadius: 100, fontSize: 13, zIndex: 1000 }}>{toast}</div>}
         </div>
     );
 }
@@ -815,8 +653,19 @@ function Stage3({ data, nextStage, onItemsChange }) {
 function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
     const mountRef = useRef(null);
     const sceneRef = useRef(null);
+    const wallRef = useRef([]);
+    const floorRef = useRef(null);
+    const curtainsRef = useRef({}); // Multiple curtains
     const lightsRef = useRef({});
+    
     const [lights, setLights] = useState({ ambient: true, daylight: false, warm: true });
+    const [config, setConfig] = useState({ 
+        wallColor: '#eae6df', 
+        floorType: 'walnut', 
+        showLeftCurtain: true,
+        showBackCurtain: false,
+        curtainColor: '#f5f0e8'
+    });
 
     useEffect(() => {
         if (!mountRef.current || !window.THREE) return;
@@ -909,6 +758,7 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
         floor.rotation.x = -Math.PI / 2;
         floor.receiveShadow = true;
         scene.add(floor);
+        floorRef.current = floor;
 
         const handleResize = () => {
             const w = mountRef.current.clientWidth || W;
@@ -922,17 +772,55 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
         ro.observe(mountRef.current);
         handleResize();
 
-        const wallMat = new THREE.MeshStandardMaterial({ color: 0xeae6df });
+        const wallMat = new THREE.MeshStandardMaterial({ color: config.wallColor });
         const backWall = new THREE.Mesh(new THREE.PlaneGeometry(RM_W, RM_H), wallMat);
         backWall.position.set(0, RM_H / 2, -RM_D / 2);
         backWall.receiveShadow = true;
         scene.add(backWall);
+        wallRef.current.push(backWall);
 
         const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(RM_D, RM_H), wallMat);
         leftWall.rotation.y = Math.PI / 2;
         leftWall.position.set(-RM_W / 2, RM_H / 2, 0);
         leftWall.receiveShadow = true;
         scene.add(leftWall);
+        wallRef.current.push(leftWall);
+
+        // --- Curtains & Windows ---
+        function addCurtain(x, z, rot, key) {
+            const group = new THREE.Group();
+            const mat = new THREE.MeshStandardMaterial({ color: config.curtainColor, roughness: 0.8, side: THREE.DoubleSide });
+            const h = RM_H * 0.95;
+            const fds = 10;
+            const fw = 0.15;
+            for (let i = 0; i < fds; i++) {
+                const g = new THREE.CylinderGeometry(fw, fw, h, 8, 1, true, 0, Math.PI);
+                const m = new THREE.Mesh(g, mat);
+                m.position.set(0, h/2, - (fds * fw / 2) + i * (fw * 1.1));
+                m.rotation.y = Math.PI / 2;
+                group.add(m);
+            }
+            group.position.set(x, 0, z);
+            group.rotation.y = rot;
+            group.visible = key === 'left' ? config.showLeftCurtain : config.showBackCurtain;
+            scene.add(group);
+            curtainsRef.current[key] = group;
+        }
+
+        addCurtain(-RM_W/2 + 0.1, 0, 0, 'left');
+        addCurtain(0, -RM_D/2 + 0.1, Math.PI/2, 'back');
+
+        const winGeo = new THREE.PlaneGeometry(3, 2);
+        const winMat = new THREE.MeshStandardMaterial({ color: '#fff', emissive: '#fff', emissiveIntensity: 2, transparent: true, opacity: 0.8 });
+        
+        const winL = new THREE.Mesh(winGeo, winMat);
+        winL.rotation.y = Math.PI / 2;
+        winL.position.set(-RM_W / 2 + 0.01, 2, 0);
+        scene.add(winL);
+
+        const winB = new THREE.Mesh(winGeo, winMat);
+        winB.position.set(0, 2, -RM_D / 2 + 0.01);
+        scene.add(winB);
 
         // --- Procedural 3D Furniture Builder ---
         function buildFurniture3D(id, color, tw, td) {
@@ -1146,7 +1034,7 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
             if (mountRef.current && renderer.domElement.parentNode === mountRef.current) mountRef.current.removeChild(renderer.domElement);
             renderer.dispose();
         };
-    }, [data.items]);
+    }, [data.items, config]);
 
     useEffect(() => {
         if (!lightsRef.current) return;
@@ -1155,49 +1043,114 @@ function Stage4a({ data, nextStage, onBack, isPreviewMode }) {
         if (lightsRef.current.warm) lightsRef.current.warm.intensity = lights.warm ? 1 : 0;
     }, [lights]);
 
+    useEffect(() => {
+        if (wallRef.current.length > 0) {
+            wallRef.current.forEach(w => w.material.color.set(config.wallColor));
+        }
+        if (floorRef.current) {
+            floorRef.current.material.color.set(config.floorType === 'walnut' ? '#ffffff' : config.floorType === 'light' ? '#e8dCC4' : '#5c4033');
+        }
+        if (curtainsRef.current.left) {
+            curtainsRef.current.left.visible = config.showLeftCurtain;
+            curtainsRef.current.left.children.forEach(c => c.material.color.set(config.curtainColor));
+        }
+        if (curtainsRef.current.back) {
+            curtainsRef.current.back.visible = config.showBackCurtain;
+            curtainsRef.current.back.children.forEach(c => c.material.color.set(config.curtainColor));
+        }
+    }, [config]);
+
 
     return (
-        <div className="flex fw fh fi" style={{ background: 'var(--bg)' }}>
-            <div className="flex-1 rel" ref={mountRef} style={{ cursor: 'grab', overflow: 'hidden', position: 'relative', height: '100%' }}>
-                <div className="abs" style={{ top: 16, left: 16, zIndex: 10 }}>
-                    <h2 style={{ fontSize: 12, textShadow: '2px 2px 0px rgba(0,0,0,0.8)', color: 'var(--copper)' }}>⛏️ 3D Preview</h2>
-                    <p style={{ fontSize: 7, color: 'var(--text)', textShadow: '1px 1px 0px rgba(0,0,0,0.8)', marginTop: 4 }}>Drag to orbit • Scroll to zoom</p>
-                    {!isPreviewMode && (
-                        <>
-                            <button className="btn bgo" style={{ marginTop: 10, background: 'rgba(0,0,0,0.6)', fontSize: 7 }} onClick={onBack}>← Back</button>
-                        </>
-                    )}
+        <div className="flex fw fh anim-fade" style={{ background: 'var(--bg)', position: 'relative' }}>
+            <div className="flex-1 rel" ref={mountRef} style={{ cursor: 'grab', background: '#EDE8DE', overflow: 'hidden' }}>
+                <div className="abs" style={{ top: 32, left: 32, zIndex: 100 }}>
+                    <div style={{ background: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(12px)', padding: '20px 32px', borderRadius: 24, border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>3D PERSPECTIVE</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>Orbit established • PBR Materials Active</div>
+                        {!isPreviewMode && <button className="btn-outline" style={{ marginTop: 24, fontSize: 11, padding: '8px 16px' }} onClick={onBack}>← Back to Blueprint</button>}
+                    </div>
                 </div>
             </div>
+
             {!isPreviewMode && (
-                <div className="sb" style={{ padding: 20, gap: 20 }}>
-                    <div>
-                        <div style={{ fontSize: 7, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>🔆 Lighting</div>
-                        {['ambient', 'daylight', 'warm'].map(l => (
-                            <div key={l} className="flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                                <span style={{ fontSize: 8, textTransform: 'capitalize' }}>{l}</span>
-                                <div style={{
-                                    width: 36, height: 18,
-                                    background: lights[l] ? 'var(--copper)' : 'var(--dim)',
-                                    position: 'relative', cursor: 'pointer',
-                                    transition: '0.1s',
-                                    border: '2px solid rgba(0,0,0,0.3)',
-                                    boxShadow: 'inset 1px 1px 0px rgba(0,0,0,0.2)'
-                                }} onClick={() => setLights(p => ({ ...p, [l]: !p[l] }))}>
-                                    <div style={{
-                                        position: 'absolute', top: 1,
-                                        left: lights[l] ? 18 : 1,
-                                        width: 14, height: 14,
-                                        background: 'var(--cream)',
-                                        transition: '0.1s',
-                                        border: '1px solid rgba(0,0,0,0.2)'
-                                    }} />
+                <div className="sb" style={{ padding: 40, borderLeft: '1px solid var(--border)', background: 'white' }}>
+                    <div className="col" style={{ gap: 40, flex: 1, overflowY: 'auto' }}>
+                        <div>
+                            <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 20 }}>🔆 Scene Illumination</div>
+                            <div className="col" style={{ gap: 16 }}>
+                                {[
+                                    { id: 'ambient', label: 'Ambient Soft Glow', icon: '☁️' },
+                                    { id: 'daylight', label: 'Daylight Entry', icon: '☀️' },
+                                    { id: 'warm', label: 'Copper Warmth', icon: '🔥' }
+                                ].map(l => (
+                                    <div key={l.id} className="flex" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div className="flex" style={{ gap: 12, alignItems: 'center' }}>
+                                            <span style={{ fontSize: 18 }}>{l.icon}</span>
+                                            <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>{l.label}</span>
+                                        </div>
+                                        <div className={`switch-premium ${lights[l.id] ? 'active' : ''}`} onClick={() => setLights(p => ({ ...p, [l.id]: !p[l.id] }))}>
+                                            <div className="thumb" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 20 }}>🎨 Structural Finish</div>
+                            <div className="col" style={{ gap: 24 }}>
+                                <div>
+                                    <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 12 }}>Architectural Wall Palette</div>
+                                    <div className="flex" style={{ flexWrap: 'wrap', gap: 8 }}>
+                                        {['#eae6df', '#f5f0e8', '#dcd8cf', '#c4bfb6', '#b5a68e'].map(c => (
+                                            <div key={c} onClick={() => setConfig(p => ({...p, wallColor: c}))} 
+                                                style={{ width: 28, height: 28, borderRadius: 8, background: c, border: config.wallColor === c ? '2px solid var(--accent)' : '1px solid var(--border)', cursor: 'pointer', transition: '0.2s' }} />
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 12 }}>Hardwood Selection</div>
+                                    <div className="flex" style={{ gap: 8 }}>
+                                        {[
+                                            { id: 'light', col: '#e8dCC4', label: 'Silver Oak' },
+                                            { id: 'walnut', col: '#8B5E3C', label: 'Walnut' },
+                                            { id: 'dark', col: '#5c4033', label: 'Ebony' }
+                                        ].map(f => (
+                                            <div key={f.id} onClick={() => setConfig(p => ({...p, floorType: f.id}))} 
+                                                style={{ 
+                                                    flex: 1, padding: '12px 6px', borderRadius: 12, fontSize: 11, fontWeight: 700, textAlign: 'center', background: f.col, color: '#fff',
+                                                    border: config.floorType === f.id ? '2px solid var(--accent)' : '1px solid rgba(0,0,0,0.1)', cursor: 'pointer', transition: '0.2s'
+                                                }}>{f.label}</div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
-                        ))}
+                        </div>
+
+                        <div>
+                            <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 20 }}>🏢 Interior Architecture</div>
+                            <div className="col" style={{ gap: 16 }}>
+                                <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 500 }}>Left Wall Curtains</span>
+                                    <div className={`switch-premium ${config.showLeftCurtain ? 'active' : ''}`} onClick={() => setConfig(p => ({ ...p, showLeftCurtain: !p.showLeftCurtain }))}>
+                                        <div className="thumb" />
+                                    </div>
+                                </div>
+                                <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 500 }}>Back Wall Curtains</span>
+                                    <div className={`switch-premium ${config.showBackCurtain ? 'active' : ''}`} onClick={() => setConfig(p => ({ ...p, showBackCurtain: !p.showBackCurtain }))}>
+                                        <div className="thumb" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div style={{ flex: 1 }} />
-                    <button className="btn bg fw" style={{ padding: 14, fontSize: 8 }} onClick={() => nextStage()}>✦ Final Render</button>
+
+                    <div style={{ marginTop: 40 }}>
+                        <button className="btn-modern fw" style={{ padding: 24, fontSize: 14 }} onClick={() => nextStage()}>Finalize Project View ✦</button>
+                        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-secondary)', marginTop: 16 }}>Real-time spatial synchronization active.</p>
+                    </div>
                 </div>
             )}
         </div>
@@ -1227,100 +1180,65 @@ function Stage4b({ data, reset }) {
     }, [data.items, data.obs, data.rt]);
 
     return (
-        <div className="flex col fw fh fi" style={{ background: 'var(--bg)' }}>
-            <div className="flex center" style={{ padding: 16, borderBottom: '3px solid var(--dim)' }}>
-                <div className="wm" style={{ fontSize: 14 }}>SOFA, SO GOOD!</div>
-                <div style={{ marginLeft: 12, fontSize: 7, color: 'var(--muted)', letterSpacing: 2 }}>⚔️ FINAL RENDER</div>
-            </div>
-
-            <div className="flex" style={{ flex: 1, minHeight: 0 }}>
-                <div className="flex-1 col" style={{ padding: 32, overflowY: 'auto' }}>
+        <div className="flex col fw fh anim-fade" style={{ background: 'var(--bg)', overflowY: 'auto' }}>
+            <div className="flex flex-1" style={{ minHeight: 0 }}>
+                <div className="flex-1" style={{ padding: 48, overflowY: 'auto' }}>
                     {load ? (
-                        <div className="flex col center fh">
-                            <div style={{
-                                width: 32, height: 32,
-                                background: 'var(--copper)',
-                                animation: 'spin 1s steps(8) infinite',
-                                border: '3px solid #6B4420'
-                            }} />
-                            <div style={{ marginTop: 20, fontSize: 8, color: 'var(--copper)', letterSpacing: 2, textTransform: 'uppercase' }}>⛏️ Rendering World...</div>
+                        <div className="flex center col fh" style={{ minHeight: 400 }}>
+                            <div style={{ width: 64, height: 64, border: '4px solid #eee', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1.2s linear infinite' }} />
+                            <div style={{ marginTop: 24, fontSize: 13, fontWeight: 700, color: 'var(--accent)', letterSpacing: 2 }}>GENERATING HIGH-RESOLUTION ASSETS...</div>
                         </div>
                     ) : (
-                        <div className="fi col" style={{ maxWidth: 1000, margin: '0 auto', width: '100%' }}>
-                            <div className="flex" style={{ gap: 16, height: 320, marginBottom: 32 }}>
+                        <div className="anim-fade" style={{ maxWidth: 1100, margin: '0 auto' }}>
+                            <div className="flex" style={{ gap: 32, height: 440, marginBottom: 48 }}>
                                 <div className="flex-1 col">
-                                    <div style={{ fontSize: 7, color: 'var(--muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>📷 Original</div>
-                                    {data.photo
-                                        ? <img src={data.photo} className="fw fh" style={{ objectFit: 'cover', border: '3px solid var(--dim)', imageRendering: 'auto' }} />
-                                        : <div className="fw fh" style={{ background: '#2a2318', border: '3px solid var(--dim)' }} />
-                                    }
-                                </div>
-                                <div className="flex-1 col" style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                                        <div style={{ fontSize: 7, color: 'var(--copper)', textTransform: 'uppercase', letterSpacing: 1 }}>
-                                            {view3d ? "🎮 3D Preview" : "🎨 AI Render"}
-                                        </div>
-                                        <button className="btn bgo" style={{ padding: '3px 6px', fontSize: 6, borderColor: 'var(--copper)', color: 'var(--copper)' }} onClick={() => setView3d(!view3d)}>
-                                            {view3d ? "→ 2D" : "→ 3D"}
-                                        </button>
+                                    <label className="control-label">📷 Reference Layout</label>
+                                    <div className="fw fh" style={{ borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow)', border: '1px solid var(--border)' }}>
+                                        {data.photo ? <img src={data.photo} className="fw fh" style={{ objectFit: 'cover' }} /> : <div className="fw fh" style={{ background: '#eee' }} />}
                                     </div>
-                                    <div className="fw fh rel" style={{ overflow: 'hidden', border: '3px solid var(--copper)', flex: 1, boxShadow: '4px 4px 0px rgba(0,0,0,0.5)' }}>
-                                        {view3d ? (
-                                            <Stage4a data={data} isPreviewMode={true} />
-                                        ) : (
-                                            <img src={`https://image.pollinations.ai/prompt/${encodeURIComponent(desc.prompt)}?width=800&height=600&nologo=true&seed=${Math.floor(Math.random() * 1000)}`} className="fw fh" style={{ objectFit: 'cover', imageRendering: 'auto' }} alt="AI generated room" onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=80'; }} />
-                                        )}
+                                </div>
+                                <div className="flex-1 col">
+                                    <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                                        <label className="control-label" style={{ marginBottom: 0 }}>🎨 4K Architectural Visualization</label>
+                                        <button className="btn-outline" style={{ padding: '4px 12px', fontSize: 11 }} onClick={() => setView3d(!view3d)}>{view3d ? "View Static" : "Interactive 3D"}</button>
+                                    </div>
+                                    <div className="fw fh" style={{ borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border)', position: 'relative' }}>
+                                        {view3d ? <Stage4a data={data} isPreviewMode={true} /> : <img src={`https://image.pollinations.ai/prompt/${encodeURIComponent(desc.prompt)}?width=1000&height=800&nologo=true&seed=88`} className="fw fh" style={{ objectFit: 'cover' }} />}
                                     </div>
                                 </div>
                             </div>
 
-                            <h2 style={{ fontSize: 12, marginBottom: 12, color: 'var(--copper)' }}>📜 Design Narrative</h2>
-                            <p style={{ fontSize: 8, lineHeight: 2, color: 'var(--muted)', marginBottom: 24 }}>{desc.text}</p>
-
-                            <div style={{
-                                background: 'var(--card)',
-                                border: '3px solid',
-                                borderColor: '#3A5A2A #2A4A1A #2A4A1A #3A5A2A',
-                                borderLeft: '4px solid var(--green)',
-                                padding: 20,
-                                boxShadow: '4px 4px 0px rgba(0,0,0,0.5)'
-                            }}>
-                                <div style={{ fontSize: 7, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>🎯 Generation Prompt</div>
-                                <div style={{ fontSize: 8, fontStyle: 'italic', color: 'var(--text)', lineHeight: 2 }}>{desc.prompt}</div>
+                            <div style={{ background: 'white', borderRadius: 24, padding: 40, boxShadow: 'var(--shadow)', marginBottom: 40 }}>
+                                <h2 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800, letterSpacing: '-0.5px' }}>Design Narrative</h2>
+                                <p style={{ fontSize: 16, lineHeight: 1.8, color: 'var(--text-secondary)', marginBottom: 32 }}>{desc.text}</p>
+                                
+                                <div className="control-group" style={{ background: '#F9FAFB', borderLeft: '4px solid var(--accent)' }}>
+                                    <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', letterSpacing: 1, marginBottom: 8, textTransform: 'uppercase' }}>AI ENGINE PROMPT</div>
+                                    <div style={{ fontSize: 14, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.6 }}>{desc.prompt}</div>
+                                </div>
                             </div>
                         </div>
                     )}
                 </div>
 
-                <div className="sb" style={{ padding: 20 }}>
-                    <div style={{
-                        background: 'var(--card)', padding: 12,
-                        marginBottom: 20,
-                        border: '3px solid',
-                        borderColor: '#5A4A2E #3A2E1A #3A2E1A #5A4A2E',
-                        boxShadow: '2px 2px 0px rgba(0,0,0,0.4)'
-                    }}>
-                        <div style={{ fontSize: 7, color: 'var(--muted)', textTransform: 'uppercase', marginBottom: 4 }}>🏠 Biome</div>
-                        <div style={{ fontSize: 9, color: 'var(--copper)' }}>{data.rt || 'Custom Layout'}</div>
+                <div className="sb" style={{ padding: 32 }}>
+                    <div className="control-group" style={{ marginBottom: 32 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 12 }}>Environment</div>
+                        <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)' }}>{data.rt || 'Custom Workspace'}</div>
                     </div>
 
-                    <div style={{ fontSize: 7, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>📦 Blocks ({data.items.length})</div>
-                    <div className="col" style={{ gap: 6, flex: 1, overflowY: 'auto' }}>
+                    <label className="control-label">Inventory List ({data.items.length})</label>
+                    <div className="col" style={{ gap: 10, flex: 1, overflowY: 'auto', marginBottom: 32 }}>
                         {data.items.map(it => (
-                            <div key={it.uid} className="flex center" style={{
-                                justifyContent: 'flex-start', gap: 10,
-                                background: 'var(--card)', padding: '6px 10px',
-                                border: '2px solid var(--dim)'
-                            }}>
-                                <span style={{ fontSize: 18 }}>{it.emoji}</span>
-                                <span style={{ fontSize: 7, textTransform: 'uppercase' }}>{it.label}</span>
+                            <div key={it.uid} className="flex" style={{ alignItems: 'center', gap: 16, padding: '12px 16px', background: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 12 }}>
+                                <span style={{ fontSize: 24 }}>{it.emoji}</span>
+                                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', textTransform: 'uppercase' }}>{it.label}</span>
                             </div>
                         ))}
                     </div>
 
-                    <div className="col" style={{ marginTop: 20, gap: 8 }}>
-                        <button className="btn bg fw" style={{ padding: 14, fontSize: 8 }} onClick={reset}>⛏️ New World</button>
-                    </div>
+                    <button className="btn-modern fw" style={{ padding: 20 }} onClick={reset}>Start New Project</button>
+                    <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-secondary)', marginTop: 16 }}>Project data and technical exports synchronized.</p>
                 </div>
             </div>
         </div>
@@ -1340,33 +1258,41 @@ function App() {
     const backTo3 = () => setStage(3);
     const reset = () => { setData({ photo: null, rt: '', obs: [], sugs: [], items: [] }); setStage(1); };
 
-    let content;
     const handleItemsChange = useCallback((newItems) => {
         setData(p => ({ ...p, items: newItems }));
     }, []);
 
+    const handleExport = () => {
+        if (window.exportToPDF) window.exportToPDF(data);
+    };
+
+    let content;
     if (stage === 1) content = <Stage1 onNext={toStage2} />;
     else if (stage === 2) content = <Stage2 data={data} onNext={toStage3} />;
     else if (stage === 3) content = <Stage3 data={data} nextStage={toStage4} onItemsChange={handleItemsChange} />;
     else if (stage === 4.1) content = <Stage4a data={data} nextStage={toFinal} onBack={backTo3} />;
     else if (stage === 4.2) content = <Stage4b data={data} reset={reset} />;
 
-    const handleExport = () => {
-        exportToPDF(data);
-    };
-
-    const showBudgetBar = stage >= 3;
-
     return (
-      <>
-        {stage === 1 && <FloatingFurniture />}
-        <div style={{ position: 'relative', zIndex: 1, height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
-          {showBudgetBar && <StickyBudgetBar items={data.items} roomType={data.rt} onExport={handleExport} />}
-          <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-            {content}
-          </div>
+        <div style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column' }}>
+            <nav className="top-nav">
+                <div className="brand">SOFA, <span>SO GOOD!</span></div>
+                <div className="flex" style={{ gap: 24 }}>
+                    {[1, 2, 3, 4].map(s => (
+                        <div key={s} style={{ 
+                            width: 12, height: 12, borderRadius: '50%', 
+                            background: Math.floor(stage) >= s ? 'var(--accent)' : 'var(--border)',
+                            transition: '0.3s'
+                        }} />
+                    ))}
+                </div>
+                {stage >= 3 && <button className="btn-outline" style={{ fontSize: 11, padding: '8px 16px' }} onClick={handleExport}>Download Project PDF</button>}
+            </nav>
+            <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+                {stage >= 3 && <StickyBudgetBar items={data.items} roomType={data.rt} />}
+                {content}
+            </div>
         </div>
-      </>
     );
 }
 
